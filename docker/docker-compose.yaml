@@ -1,0 +1,48 @@
+services:
+  nginx-ztpai:
+    build:
+      context: ./../
+      dockerfile: ./docker/nginx/Dockerfile
+    container_name: nginx-ztpai
+    ports:
+      - "8080:80"
+    networks:
+      - internal
+    volumes:
+      - ./../app:/var/www/html/
+      - ./../logs/nginx:/var/log/nginx/
+    links:
+      - php-ztpai
+    depends_on:
+      - php-ztpai
+
+  php-ztpai:
+    build:
+      context: ./../
+      dockerfile: ./docker/php/Dockerfile
+    container_name: php-ztpai
+    networks:
+      - internal
+    volumes:
+      - ./../app:/var/www/html/
+      - ./../logs/php:/var/log/
+    links:
+      - postgresql-ztpai
+    depends_on:
+      - postgresql-ztpai
+    post_start:
+      - command: composer install
+
+  postgresql-ztpai:
+    build:
+      context: ./../
+      dockerfile: ./docker/postgresql/Dockerfile
+    container_name: postgresql-ztpai
+    networks:
+      - internal
+    volumes:
+      - ./../data:/var/lib/postgresql/data
+
+networks:
+  internal:
+    driver: bridge
