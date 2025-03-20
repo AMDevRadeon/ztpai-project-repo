@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 // Discussions
 class DiscussionController extends AbstractController 
 {
-    #[Route('api/discussions/{discussion}/{comment}', methods: ['GET'], requirements: ['discussion' => '\d+', 'comment' => '\d+'])]
+    #[Route('api/discussions/{discussion}/{comment}', methods: ['GET', 'POST'], requirements: ['discussion' => '\d+', 'comment' => '\d+'])]
     public function show(string $discussion, string $comment = '0'): Response
     {
         $discussions = [
