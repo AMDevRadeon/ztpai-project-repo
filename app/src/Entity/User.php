@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
+use JsonSerializable;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+class User implements JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -96,6 +97,16 @@ class User
         $this->motto = $motto;
 
         return $this;
+    }
+
+    public function jsonSerialize()
+    {
+        return array (
+            'nick' => $this->getId(),
+            'email' => $this->getEmail(),
+            'provenance' => $this->getProvenance(),
+            'motto' => $this->getMotto()
+        );
     }
 
     // public function getAccountCreationTimestamp(): ?\DateTimeImmutable
