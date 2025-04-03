@@ -102,7 +102,7 @@ class User implements JsonSerializable
     public function jsonSerialize()
     {
         return array (
-            'nick' => $this->getId(),
+            'nick' => $this->getNick(),
             'email' => $this->getEmail(),
             'provenance' => $this->getProvenance(),
             'motto' => $this->getMotto()
