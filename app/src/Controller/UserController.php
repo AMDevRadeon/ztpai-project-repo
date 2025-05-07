@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,19 +22,6 @@ class UserController extends AbstractController
     {
         $user = $entityManager->getRepository(User::class)->find($id);
 
-        // var_dump($user);
-
-        // $users = [
-        //     '1' => [
-        //         'name' => "Adam Mickiewicz",
-        //         'email' => "litwo@ojczyzno.moja",
-        //     ],
-        //     '2' => [
-        //         'name' => "Juliusz Słowacki",
-        //         'email' => "ele@bele.mele",
-        //     ]
-        // ];
-
         $response = new Response();
 
         if ($user) {
@@ -47,5 +35,44 @@ class UserController extends AbstractController
         }
         
         return $response;
+    }
+
+    #[Route('api/users/add', methods: ['POST'])]
+    public function add(EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $user = new User();
+
+        $data = $request->getPayload();
+
+        if ($data->get("nick") === null ||
+            $data->get("email") === null ||
+            $data->get("passhash") === null)
+        {
+            return new Response(
+                json_encode(
+                    [
+                        "desc" => "Required data values empty"
+                    ]
+                ),
+                Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setNick($data->get("nick"));
+        $user->setEmail($data->get("email"));
+        $user->setPasshash($data->get("passhash"));
+        $user->setProvenance($data->get("provenance"));
+        $user->setMotto($data->get("motto"));
+
+        $entityManager->persist($user);
+
+        $entityManager->flush();
+
+        return new Response(
+            json_encode(
+                [
+                    "desc" => "Account succesfully created"
+                ]
+            ),
+            Response::HTTP_CREATED);
     }
 }
