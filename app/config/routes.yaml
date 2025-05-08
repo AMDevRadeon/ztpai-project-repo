@@ -3,6 +3,8 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+    defaults:
+        _format: json
 
 app.swagger_ui:
     path: /api/docs
