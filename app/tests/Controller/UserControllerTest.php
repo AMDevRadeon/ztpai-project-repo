@@ -8,7 +8,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class UserControllerTest extends WebTestCase
 {
-
     #[Test]
     #[DataProvider('dataInvalidUserControllerTestProvider')]
     #[TestDox('Trying invalid request $_dataName')]
