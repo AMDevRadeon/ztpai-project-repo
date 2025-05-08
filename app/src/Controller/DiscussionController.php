@@ -7,10 +7,36 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Nelmio\ApiDocBundle\Attribute\Model;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
+
 // Discussions
 class DiscussionController extends AbstractController 
 {
-    #[Route('api/discussions/{discussion}/{comment}', methods: ['GET', 'POST'], requirements: ['discussion' => '\d+', 'comment' => '\d+'])]
+    #[Route('api/discussions/{discussion}/{comment}', methods: ['GET'], requirements: ['discussion' => '\d+', 'comment' => '\d+'])]
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Returned comments under different discussions",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                "commenterID": "1",
+                "comment": "A bo tak",
+                "commentScore": 5
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_NOT_FOUND,
+        description: "No comments with such ID under specified discussion",
+        content: new OA\JsonContent(
+            type: 'object',
+        )
+    )]
+    #[OA\Tag(name: 'Discussions')]
     public function show(string $discussion, string $comment = '0'): Response
     {
         $discussions = [

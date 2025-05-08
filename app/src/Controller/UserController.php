@@ -8,6 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Nelmio\ApiDocBundle\Attribute\Model;
+use Nelmio\ApiDocBundle\Attribute\Security;
+use OpenApi\Attributes as OA;
+
 use App\Entity\User;
 use App\Entity\UserRole;
 use App\Entity\UserSettings;
@@ -18,6 +22,22 @@ use Doctrine\ORM\EntityManagerInterface;
 class UserController extends AbstractController 
 {
     #[Route('api/users/{id}', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Returns user data given by id",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+            {
+                "nick": "AMickiewicz",
+                "email": "litwo@ojczyzno.moja",
+                "provenance": null,
+                "motto": null
+            }
+            EXAMPLE
+        )
+    )]
+    #[OA\Tag(name: 'Users')]
     public function show(EntityManagerInterface $entityManager, int $id): Response
     {
         $user = $entityManager->getRepository(User::class)->find($id);
@@ -38,6 +58,45 @@ class UserController extends AbstractController
     }
 
     #[Route('api/users/add', methods: ['POST'])]
+    #[OA\Response(
+        response: Response::HTTP_CREATED,
+        description: "Created new user from given data",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+            {
+                "desc": "Account succesfully created"
+            }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: "Essential data not provided (missing either _nick_, _email_ or _passhash_)",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+            {
+                "desc": "Required data values empty"
+            }
+            EXAMPLE
+        )
+    )]
+    #[OA\RequestBody(
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+            {
+                "nick": "AMickiewicz",
+                "email": "litwo@ojczyzno.moja",
+                "passhash": "ABCDEFGHIJKLMNOP",
+                "provenance": null,
+                "motto": null
+            }
+            EXAMPLE
+        )
+    )]
+    #[OA\Tag(name: 'Users')]
     public function add(EntityManagerInterface $entityManager, Request $request): Response
     {
         $user = new User();
