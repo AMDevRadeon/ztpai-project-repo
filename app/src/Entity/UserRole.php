@@ -1,29 +1,33 @@
 <?php
-
 namespace App\Entity;
 
-use App\Repository\UserRoleRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
-#[ORM\Entity(repositoryClass: UserRoleRepository::class)]
+#[ORM\Entity]
+#[ORM\Table(name: 'users_role')]
 class UserRole
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $uid = null;
 
     #[ORM\Column]
-    private ?int $role = null;
+    private int $role;
 
-    public function getId(): ?int
+    #[ORM\ManyToOne(inversedBy: 'userRoles')]
+    #[ORM\JoinColumn(name: 'uid', referencedColumnName: 'uid', nullable: false)]
+    private User $user;
+
+    public function getUid(): ?int
     {
-        return $this->id;
+        return $this->uid;
     }
 
-    public function setId(User $id): static
+    public function setUid(User $uid): static
     {
-        $this->id = $id;
+        $this->uid = $uid;
 
         return $this;
     }
@@ -36,6 +40,18 @@ class UserRole
     public function setRole(int $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->role;
+    }
+
+    public function setUser(User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

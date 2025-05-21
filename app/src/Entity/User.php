@@ -1,42 +1,65 @@
 <?php
-
 namespace App\Entity;
 
-use JsonSerializable;
 use App\Repository\UserRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
-class User implements JsonSerializable
+#[UniqueEntity('email')]
+#[UniqueEntity('nick')]
+#[ORM\Table(name: 'users')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const ROLE_MAP = [
+        0 => 'ROLE_ANONYMOUS',
+        1 => 'ROLE_USER',
+        2 => 'ROLE_ADMIN',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'uid')]
-    private ?int $id = null;
+    #[ORM\Column]
+    private ?int $uid = null;
 
     #[ORM\Column(length: 64)]
-    private ?string $nick = null;
+    private string $nick;
 
-    #[ORM\Column(length: 255)]
-    private ?string $email = null;
+    #[ORM\Column(length: 180)]
+    private string $email;
 
-    #[ORM\Column(length: 184)]
-    private ?string $passhash = null;
+    #[ORM\Column]
+    private string $passhash;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 128, nullable: true)]
     private ?string $provenance = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 128, nullable: true)]
     private ?string $motto = null;
 
-    // #[ORM\Column(name: 'user_creation_timestamp', type: Types::DATETIMETZ_IMMUTABLE, selectable: false, updatable: false, insertable: false)]
-    // private ?\DateTimeImmutable $account_creation_timestamp = null;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $accCreationTimestamp;
 
-    public function getId(): ?int
+    /** @var Collection<int,UserRole> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserRole::class, cascade: ['persist','remove'])]
+    private Collection $userRoles;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserSettings::class, cascade: ['persist','remove'])]
+    private ?UserSettings $settings = null;
+
+    public function __construct()
     {
-        return $this->id;
+        $this->accCreationTimestamp = new \DateTimeImmutable();
+        $this->userRoles            = new ArrayCollection();
+    }
+
+    public function getUid(): ?int
+    {
+        return $this->uid;
     }
 
     public function getNick(): ?string
@@ -99,25 +122,35 @@ class User implements JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): mixed
+    public function getRoles(): array
     {
-        return array (
-            'nick' => $this->getNick(),
-            'email' => $this->getEmail(),
-            'provenance' => $this->getProvenance(),
-            'motto' => $this->getMotto()
-        );
+        $roles = $this->userRoles->map(
+            fn(UserRole $ur) => self::ROLE_MAP[$ur->getRole()]
+        )->toArray();
+
+        return $roles ?: ['ROLE_ANONYMOUS'];
     }
 
-    // public function getAccountCreationTimestamp(): ?\DateTimeImmutable
-    // {
-    //     return $this->account_creation_timestamp;
-    // }
+    public function getSettings(): UserSettings
+    {
+        return $this->settings;
+    }
 
-    // public function setAccountCreationTimestamp(\DateTimeImmutable $account_creation_timestamp): static
-    // {
-    //     $this->account_creation_timestamp = $account_creation_timestamp;
+    public function getPassword(): string   
+    {
+        return $this->passhash;
+    }
 
-    //     return $this;
-    // }
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    public function eraseCredentials(): void
+    {}
+
+    public function getUserIdentifier(): string 
+    { 
+        return $this->email;
+    }
 }

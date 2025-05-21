@@ -1,29 +1,34 @@
 <?php
-
 namespace App\Entity;
 
-use App\Repository\UserSettingsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
-#[ORM\Entity(repositoryClass: UserSettingsRepository::class)]
+
+#[ORM\Entity]
+#[ORM\Table(name: 'users_settings')]
 class UserSettings
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $uid = null;
 
-    #[ORM\Column]
-    private ?bool $display_email = null;
+    #[ORM\Column(options: ['default' => false])]
+    private bool $display_email = false;
 
-    public function getId(): ?int
+    #[ORM\OneToOne(inversedBy: 'settings')]
+    #[ORM\JoinColumn(name: 'uid', referencedColumnName: 'uid', nullable: false)]
+    private User $user;
+
+    public function getUid(): ?int
     {
         return $this->id;
     }
 
-    public function setId(User $id): static
+    public function setUid(User $uid): static
     {
-        $this->id = $id;
+        $this->uid = $uid;
 
         return $this;
     }
@@ -36,6 +41,18 @@ class UserSettings
     public function setDisplayEmail(bool $display_email): static
     {
         $this->display_email = $display_email;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->role;
+    }
+
+    public function setUser(User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
