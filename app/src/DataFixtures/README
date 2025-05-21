@@ -1,0 +1,4 @@
+# Rebuild test environment
+php bin/console --env=test doctrine:schema:drop --force
+php bin/console --env=test doctrine:schema:create
+php bin/console --env=test doctrine:fixtures:load
