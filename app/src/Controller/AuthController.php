@@ -26,7 +26,8 @@ class AuthController extends AbstractController
         // Required fields
         foreach (['nick', 'email', 'password'] as $field) {
             if (empty($payload[$field])) {
-                return $this->json(["error" => "Missing $field"], Response::HTTP_BAD_REQUEST);
+                return $this->json(["desc" => "Missing $field", 'code' => Response::HTTP_BAD_REQUEST],
+                                   Response::HTTP_BAD_REQUEST);
             }
         }
 
@@ -57,6 +58,7 @@ class AuthController extends AbstractController
         $em->persist($settings);
         $em->flush();
 
-        return $this->json(['status' => "Created new user: " . $user->getNick()], Response::HTTP_CREATED);
+        return $this->json(['desc' => "Created new user: " . $user->getNick(), 'code' => Response::HTTP_CREATED],
+                           Response::HTTP_CREATED);
     }
 }

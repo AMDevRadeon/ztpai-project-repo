@@ -2,10 +2,11 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,7 +18,8 @@ class UserController extends AbstractController
     {
         $u = $repo->find($uid);
         if (!$u) {
-            return $this->json(['error' => 'User not found'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['desc' => 'User not found', 'code' => Response::HTTP_BAD_REQUEST],
+                                Response::HTTP_BAD_REQUEST);
         }
 
         $data = [
@@ -39,13 +41,15 @@ class UserController extends AbstractController
 
     #[Route('/api/user/me', name: 'api_user_me', methods: ['PATCH'])]
     public function updateMe(Request $req,
-                             Security $sec,
+                             TokenInterface $sec,
+                             EntityManagerInterface $em,
                              UserPasswordHasherInterface $hasher): JsonResponse 
     {
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED],
+                               Response::HTTP_UNAUTHORIZED);
         }
 
         $payload = json_decode($req->getContent(), true);
@@ -60,12 +64,14 @@ class UserController extends AbstractController
             $user->setProvenance($payload['provenance'] ?: null);
         }
 
-        if (!empty($payload['passhash']))
+        if (!empty($payload['password']))
         {
-            $user->setPasshash($hasher->hashPassword($user, $payload['passhash']));
+            $user->setPasshash($hasher->hashPassword($user, $payload['password']));
         }
 
-        $this->getDoctrine()->getManager()->flush();
-        return $this->json(['status' => 'updated']);
+        $em->persist($user);
+        $em->flush();
+
+        return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
     }
 }

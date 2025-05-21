@@ -14,7 +14,7 @@ class ExceptionListener
         $jsonMessage = json_encode(
             [
                 "desc" => $exception->getMessage(),
-                "code" => $exception->getCode()
+                "code" => Response::HTTP_INTERNAL_SERVER_ERROR
             ]
         );
 
