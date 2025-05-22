@@ -13,8 +13,61 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\Response;
 
+use OpenApi\Attributes as OA;
+
 class AuthController extends AbstractController
 {
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "User successfully created",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Created new user: nick",
+                    "code": "200"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: "Some fields missing",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Missing password",
+                    "code": "401"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNPROCESSABLE_ENTITY,
+        description: "Constraints not met",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "nick: This value is too long. It should have 64 characters or less.",
+                    "code": "422"
+                }
+            EXAMPLE
+        )
+    )]    
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            type: Object::class,
+            example: [
+                "nick" => "user",
+                "email" => "email@test.com",
+                "password" => "password"
+            ]
+        )
+    )]
+    #[OA\Tag(name: 'API')]
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request,
                              EntityManagerInterface $em,

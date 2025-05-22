@@ -11,8 +11,33 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use OpenApi\Attributes as OA;
+
+
 class UserController extends AbstractController
 {
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Returns data about user",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "uid": "1",
+                    "nick": "alfa",
+                    "motto": "Jest jak jest"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: "No data about user with provided UID",
+        content: new OA\JsonContent(
+            type: 'object',
+        )
+    )]
+    #[OA\Tag(name: 'API')]
     #[Route('/api/user/{uid}', name: 'api_user_public', methods: ['GET'])]
     public function publicProfile(int $uid, UserRepository $repo): JsonResponse
     {
@@ -39,6 +64,46 @@ class UserController extends AbstractController
         return $this->json($data);
     }
 
+
+
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Data successfully commited to database",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Updated",
+                    "code": "400"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNAUTHORIZED,
+        description: "User did not log in",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Unauthorized",
+                    "code": "401"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            type: 'object',
+            example:[
+                "motto" => "new_motto",
+                "provenance" => "new_provenance",
+                "password" => "new_password"
+            ]
+        )
+    )]
+    #[OA\Tag(name: 'API')]
     #[Route('/api/user/me', name: 'api_user_me', methods: ['PATCH'])]
     public function updateMe(Request $req,
                              TokenInterface $sec,

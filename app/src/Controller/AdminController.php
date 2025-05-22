@@ -15,9 +15,60 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use OpenApi\Attributes as OA;
+
 
 final class AdminController extends AbstractController
 {
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "User deleted",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Deleted",
+                    "code": "200"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: "Invalid request made in this context",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "User not found",
+                    "code": "401"
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNAUTHORIZED,
+        description: "User not authorized",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Unauthorized",
+                    "code": "401"
+                }
+            EXAMPLE
+        )
+    )]    
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            type: Object::class,
+            example: [
+                "uid" => "10"
+            ]
+        )
+    )]
+    #[OA\Tag(name: 'Admin')]
     #[Route('api/admin/delete', name: 'api_admin_delete', methods: ['DELETE'])]
     public function deleteUser(Request $req,
                                TokenInterface $sec,
@@ -36,7 +87,7 @@ final class AdminController extends AbstractController
         // Required fields
         if (empty($payload["uid"])) 
         {
-            return $this->json(["desc" => "Missing $field", 'code' => Response::HTTP_UNAUTHORIZED],
+            return $this->json(["desc" => "Missing $field", 'code' => Response::HTTP_BAD_REQUEST],
                                Response::HTTP_BAD_REQUEST);
         }
 
