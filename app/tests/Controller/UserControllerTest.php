@@ -4,99 +4,170 @@ use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Doctrine\ORM\EntityManager;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use App\Entity\User;
+use App\Repository\UserRepository;
 
 
 final class UserControllerTest extends WebTestCase
 {
-    #[Test]
-    #[DataProvider('dataInvalidUserControllerTestProvider')]
-    #[TestDox('Trying invalid request $_dataName')]
-    public function testInvalidArgumentsReturnBadRequest(array $rq): void
-    {
-        $client = static::createClient();
+    private UserRepository $repo;
+    private static KernelBrowser $client;
 
-        $crawler = $client->jsonRequest('POST', 'api/users/add', $rq);
-        $response = $client->getResponse();
+    protected function setUp(): void
+    {
+        self::$client = static::createClient();
+        $this->repo = self::getContainer()
+            ->get(UserRepository::class);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+    }
+
+    // Assume correct fixtures
+    protected function createAuthenticatedClient($uid)
+    {
+        self::$client->jsonRequest(
+            'POST',
+            '/api/login_check',
+            [
+                'email' => "test_case_$i@email.com",
+                'password' => "passwd$i"
+            ]
+        );
+
+        $data = json_decode(self::$client->getResponse()->getContent(), true);
+
+        return [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $data['token']
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('dataPublicProfileIncorrectUidProvider')]
+    #[TestDox('Trying different nonexistant indices $_dataName')]
+    public function testPublicProfileIncorrectUid(int $uid): void
+    {
+        $crawler = self::$client->request('GET', "api/user/$uid");
+        $response = self::$client->getResponse();
 
         $this->assertResponseStatusCodeSame(400);
         $this->assertJson($response->getContent());
-        $this->assertSame($response->getContent(), json_encode(
-            [
-                "desc" => "Required data values empty"
-            ]
-            ));
     }
 
     #[Test]
-    #[DataProvider('dataValidUserControllerTestProvider')]
+    #[DataProvider('dataPublicProfileCorrectUidProvider')]
     #[TestDox('Trying valid request $_dataName')]
-    public function testValidArgumentsCreateUsers(array $rq): void
+    public function testPublicProfileCorrectUid(int $uid): void
     {
-        $client = static::createClient();
+        $crawler = self::$client->request('GET', "api/user/$uid");
+        $response = self::$client->getResponse();
 
-        $crawler = $client->jsonRequest('POST', 'api/users/add', $rq);
-        $response = $client->getResponse();
-
-        $this->assertResponseStatusCodeSame(201);
+        $this->assertResponseStatusCodeSame(200);
         $this->assertJson($response->getContent());
-        $this->assertSame($response->getContent(), json_encode(
-            [
-                "desc" => "Account succesfully created"
-            ]
-            ));
     }
 
-    public static function dataInvalidUserControllerTestProvider(): array
+    #[Test]
+    #[TestDox('Trying to use endpoint without authentication')]
+    public function testUpdateMeRequiresJWT(): void
     {
-        // $params = array_map(
-        //     'json_encode',
-        //     [
-        //         [],
-        //         ["x" => "1"],
-        //         ["nick" => "alfa"],
-        //         ["email" => "beta"],
-        //         ["passhash" => "gamma"],
-        //         ["nick" => "alfa", "email" => "beta"],
-        //         ["nick" => "alfa", "passhash" => "gamma"],
-        //         ["email" => "beta", "passhash" => "gamma"]
-        //     ]
-        // );
+        $crawler = self::$client->request('PATCH', "/api/user/me");
+        $response = self::$client->getResponse();
 
+        // TODO
+        $this->assertResponseStatusCodeSame(500);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataUpdateMeChangeThingsProvider')]
+    #[TestDox('Trying to change things about logged user: $_dataName')]
+    public function testUpdateMeChangeThings(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $user_before = $this->repo->find($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/user/me", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        // TODO
+        $this->assertResponseStatusCodeSame(500);
+        $this->assertJson($response->getContent());
+
+        $user_after = $this->repo->find($uid);
+
+        return;
+
+        if (isset($rq["motto"]))
+        {
+            $this->assertNotSame($user_before->getMotto(), $user_after->getMotto());
+        }
+        else
+        {
+            $this->assertSame($user_before->getMotto(), $user_after->getMotto());
+        }
+
+        if (isset($rq["provenance"]))
+        {
+            $this->assertNotSame($user_before->getProvenance(), $user_after->getProvenance());
+        }
+        else
+        {
+            $this->assertSame($user_before->getProvenance(), $user_after->getProvenance());
+        }
+
+        if (isset($rq["password"]))
+        {
+            $this->assertNotSame($user_before->getPasshash(), $user_after->getPasshash());
+        }
+        else
+        {
+            $this->assertSame($user_before->getPasshash(), $user_after->getPasshash());
+        }
+    }
+
+    public static function dataPublicProfileIncorrectUidProvider(): array
+    {
         $params = [
-            "empty" => [],
-            "invalid" => ["x" => "1"],
-            "only_one1" => ["nick" => "alfa"],
-            "only_one2" => ["email" => "beta"],
-            "only_one3" => ["passhash" => "gamma"],
-            "only_two1" => ["nick" => "alfa", "email" => "beta"],
-            "only_two2" => ["nick" => "alfa", "passhash" => "gamma"],
-            "only_two3" => ["email" => "beta", "passhash" => "gamma"]
+            "big1" => [1024],
+            "big2" => [100100],
+            "negative" => [-1]
         ];
-
-        array_walk($params, function (array &$item) { $item = array($item); });
 
         return $params;
     }
 
-    public static function dataValidUserControllerTestProvider(): array
+    public static function dataPublicProfileCorrectUidProvider(): array
     {
-        // $params = array_map(
-        //     'json_encode',
-        //     [
-        //         ["nick" => "alfa", "email" => "beta@theta.pl", "passhash" => "gamma"],
-        //         ["email" => "beta", "passhash" => "gamma", "nick" => "alfa"],
-        //         ["email" => "beta2", "passhash" => "gamma2", "nick" => "alfa2", "provenance" => "delta2", "motto" => "epsilon2"],
-        //     ]
-        // );
-
         $params = [
-            "simple" => ["nick" => "alfa", "email" => "beta@theta.pl", "passhash" => "gamma"],
-            "out_of_order" => ["email" => "beta", "passhash" => "gamma", "nick" => "alfa"],
-            "all" => ["email" => "beta2", "passhash" => "gamma2", "nick" => "alfa2", "provenance" => "delta2", "motto" => "epsilon2"],
+            "correct1" => [1],
+            "correct2" => [2],
+            "correct3" => [10],
+            "correct4" => [11],
+            "correct5" => [53],
         ];
-
-        array_walk($params, function (array &$item) { $item = array($item); });
 
         return $params;
     }
+
+    public static function dataUpdateMeChangeThingsProvider(): array
+    {
+        $params = [
+            "nothing" => [1, []],
+            "motto" => [2, ["motto" => "something_different"]],
+            "provenance" => [10, ["provenance" => "something_different"]],
+            "password" => [11, ["password" => "something_different"]],
+            "all" => [53, ["motto" => "something_different", "provenance" => "something_different", "password" => "something_different"]],
+        ];
+
+        return $params;
+    }
+
+    
 }

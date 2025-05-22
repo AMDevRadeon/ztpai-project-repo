@@ -50,7 +50,8 @@ class AuthController extends AbstractController
 
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
-            return $this->json($errors, Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+                               Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($user);
