@@ -4,6 +4,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\UserRole;
 use App\Entity\UserSettings;
+use App\Message\UserDataForEmailMessage;
+use App\Service\MailSender;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 use OpenApi\Attributes as OA;
 
@@ -72,7 +75,8 @@ class AuthController extends AbstractController
     public function register(Request $request,
                              EntityManagerInterface $em,
                              UserPasswordHasherInterface $hasher,
-                             ValidatorInterface $validator): JsonResponse 
+                             ValidatorInterface $validator,
+                             MessageBusInterface $bus): JsonResponse 
     {
         $payload = $request->toArray();
 
@@ -106,6 +110,13 @@ class AuthController extends AbstractController
             return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+
+        $usermail = new UserDataForEmailMessage(
+            $user->getNick(),
+            $user->getEmail()
+        );
+
+        $bus->dispatch($usermail);
 
         $em->persist($user);
         $em->persist($ur);

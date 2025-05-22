@@ -43,6 +43,15 @@ services:
     volumes:
       - ./../data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-ztpai
+    networks:
+      - internal
+    ports:
+      - "8081:15672"
+      - "5672:5672"
+
 networks:
   internal:
     driver: bridge
