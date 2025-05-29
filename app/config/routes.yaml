@@ -14,3 +14,7 @@ app.swagger_ui:
 api_login_check:
     path: /api/login_check
     methods: [POST]
+
+api_token_refresh:
+    path: /api/token_refresh
+    methods: [POST]
