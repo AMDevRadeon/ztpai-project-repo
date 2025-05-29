@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use App\Entity\Topic;
+use App\Entity\Post;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity('email')]
@@ -51,10 +53,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserSettings::class, cascade: ['persist','remove'])]
     private ?UserSettings $settings = null;
 
+    /** @var Collection<int,Topic> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Topic::class, cascade: ['persist','remove'])]
+    private ?Collection $userTopics = null;
+
+    /** @var Collection<int,Post> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, cascade: ['persist','remove'])]
+    private ?Collection $userPosts = null;
+
+    /** @var Collection<int,Comment> */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, cascade: ['persist','remove'])]
+    private ?Collection $userComments = null;
+
     public function __construct()
     {
         $this->accCreationTimestamp = new \DateTimeImmutable();
         $this->userRoles            = new ArrayCollection();
+        $this->userTopics           = new ArrayCollection();
+        $this->userPosts            = new ArrayCollection();
+        $this->userComments         = new ArrayCollection();
     }
 
     public function getUid(): ?int
@@ -122,6 +139,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getAccCreationTimestamp(): ?\DateTimeImmutable
+    {
+        return $this->accCreationTimestamp;
+    }
+
     public function getRoles(): array
     {
         $roles = $this->userRoles->map(
@@ -129,6 +151,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         )->toArray();
 
         return $roles ?: ['ROLE_ANONYMOUS'];
+    }
+
+    public function getTopics(): ?Collection
+    {
+        return $this->userTopics;
+    }
+
+    public function getPosts(): ?Collection
+    {
+        return $this->userPosts;
+    }
+
+    public function getComments(): ?Collection
+    {
+        return $this->userComments;
     }
 
     public function getSettings(): UserSettings
