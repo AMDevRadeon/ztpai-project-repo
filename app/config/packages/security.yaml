@@ -54,6 +54,11 @@ security:
         - { path: ^/api/user/\d+$,      roles: PUBLIC_ACCESS }
         - { path: ^/api/user/me,        roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/admin,          roles: ROLE_ADMIN }
+
+        - { path: ^/api/topic/get,      roles: PUBLIC_ACCESS }
+        - { path: ^/api/post/get,       roles: PUBLIC_ACCESS }
+        - { path: ^/api/post/add,       roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/post/edit,      roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
