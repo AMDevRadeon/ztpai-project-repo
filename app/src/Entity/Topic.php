@@ -31,6 +31,9 @@ class Topic
     #[ORM\Column(length: 8192)]
     private string $content;
 
+    #[ORM\Column]
+    private bool $isArchived = false;
+
     #[ORM\ManyToOne(inversedBy: 'userTopics')]
     #[ORM\JoinColumn(name: 'uid', referencedColumnName: 'uid', nullable: false)]
     private User $user;
@@ -75,6 +78,18 @@ class Topic
     public function setTitle(?string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getIsArchived(): ?bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setIsArchived(?bool $isArchived): static
+    {
+        $this->isArchived = $isArchived;
 
         return $this;
     }

@@ -254,6 +254,11 @@ final class AdminController extends AbstractController
             $topic->setContent($payload['content'] ?: null);
         }
 
+        if (isset($payload['archived'])) 
+        {
+            $topic->setIsArchived($payload['archived'] ?: false);
+        }
+
         $em->persist($topic);
         $em->flush();
 

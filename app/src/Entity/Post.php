@@ -33,6 +33,9 @@ class Post
     #[ORM\Column(length: 8192)]
     private string $content;
 
+    #[ORM\Column]
+    private bool $isArchived = false;
+
     #[ORM\ManyToOne(inversedBy: 'userPosts')]
     #[ORM\JoinColumn(name: 'uid', referencedColumnName: 'uid', nullable: false)]
     private User $user;
@@ -98,6 +101,18 @@ class Post
     public function setContent(?string $content): static
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getIsArchived(): ?bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setIsArchived(?bool $isArchived): static
+    {
+        $this->isArchived = $isArchived;
 
         return $this;
     }
