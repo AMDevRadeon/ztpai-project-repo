@@ -55,7 +55,7 @@ class Topic
         return $this->uid;
     }
 
-    public function setUid(User $uid): static
+    public function setUid(int $uid): static
     {
         $this->uid = $uid;
 

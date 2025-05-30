@@ -46,7 +46,7 @@ class UserRole
 
     public function getUser(): ?User
     {
-        return $this->role;
+        return $this->user;
     }
 
     public function setUser(User $user): static

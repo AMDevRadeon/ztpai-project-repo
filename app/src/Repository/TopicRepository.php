@@ -16,6 +16,22 @@ class TopicRepository extends ServiceEntityRepository
         parent::__construct($registry, Topic::class);
     }
 
+    // public function getTopicsPaginated(int $offset, int $limit): string
+    // {
+        // return $this->createQueryBuilder('')
+        //     ->select('t.tid', 't.uid', 't.topicCreationTimestamp', 't.title', 't.content')
+        //     ->from(Topic::class, 'u')
+        //     ->orderBy('t.topicCreationTimestamp', 'DESC')
+        //     ->setFirstResult($offset)
+        //     ->setMaxResults($limit)
+        //     ->getQuery()
+            // ->getResult();
+            // ->getSQL();
+
+        // return $this->createQuery("SELECT t.tid, t.uid, t.topicCreationTimestamp, t.title, t.content FROM App\Entity\Topic t ORDER BY t.topicCreationTimestamp DESC LIMIT $limit")
+        //     ->getResult();
+    // }
+
 //    /**
 //     * @return User[] Returns an array of User objects
 //     */

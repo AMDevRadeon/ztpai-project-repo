@@ -48,7 +48,6 @@ class UserController extends AbstractController
         }
 
         $data = [
-            'uid'        => $u->getUid(),
             'nick'       => $u->getNick(),
             'motto'      => $u->getMotto(),
             'provenance' => $u->getProvenance(),

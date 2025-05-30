@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Topic;
+use App\Service\ValidJSONStructure;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,22 +28,18 @@ final class TopicController extends AbstractController
     {
         $payload = $req->toArray();
 
-        // TODO: make this a service that checks required JSON parameters
-        // Required fields
-        if (!isset($payload['offset']))
-        {
-            return $this->json(["desc" => "Missing offset", 'code' => Response::HTTP_BAD_REQUEST],
-                               Response::HTTP_BAD_REQUEST);
-        }
+        $missing_key = ValidJSONStructure::checkKeys($payload, 'offset', 'limit');
 
-        if (!isset($payload['limit'])) 
+        if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing limit", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
                                Response::HTTP_BAD_REQUEST);
         }
 
         $offset = intval($payload["offset"]);
         $limit = intval($payload["limit"]);
+
+        $limit = $limit > 128 ? 128 : $limit;
 
         // Database logic
         $query_builder = $em->createQueryBuilder();
