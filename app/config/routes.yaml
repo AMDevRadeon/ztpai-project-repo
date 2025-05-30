@@ -18,3 +18,7 @@ api_login_check:
 api_token_refresh:
     path: /api/token_refresh
     methods: [POST]
+
+api_token_invalidate:
+    path: /api/token_invalidate
+    methods: [POST]

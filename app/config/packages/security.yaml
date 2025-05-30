@@ -31,6 +31,8 @@ security:
             jwt: ~
             refresh_jwt:
                 check_path: api_token_refresh
+            logout:
+                path: api_token_invalidate
             provider: app_provider
 
         main:
@@ -47,18 +49,21 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/login,          roles: PUBLIC_ACCESS }
-        - { path: ^/api/login_check,    roles: PUBLIC_ACCESS }
-        - { path: ^/api/token_refresh,  roles: PUBLIC_ACCESS }
-        - { path: ^/api/register,       roles: PUBLIC_ACCESS }
-        - { path: ^/api/user/\d+$,      roles: PUBLIC_ACCESS }
-        - { path: ^/api/user/me,        roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api/admin,          roles: ROLE_ADMIN }
+        - { path: ^/api/login,              roles: PUBLIC_ACCESS }
+        - { path: ^/api/login_check,        roles: PUBLIC_ACCESS }
+        - { path: ^/api/token_refresh,      roles: PUBLIC_ACCESS }
+        - { path: ^/api/token_invalidate,   roles: PUBLIC_ACCESS }
+        - { path: ^/api/register,           roles: PUBLIC_ACCESS }
+        - { path: ^/api/user/\d+$,          roles: PUBLIC_ACCESS }
+        - { path: ^/api/user/me,            roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/admin,              roles: ROLE_ADMIN }
 
-        - { path: ^/api/topic/get,      roles: PUBLIC_ACCESS }
-        - { path: ^/api/post/get,       roles: PUBLIC_ACCESS }
-        - { path: ^/api/post/add,       roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api/post/edit,      roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/topic/get,          roles: PUBLIC_ACCESS }
+        - { path: ^/api/post/get,           roles: PUBLIC_ACCESS }
+        - { path: ^/api/post/add,           roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/post/edit,          roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/comment/get,        roles: PUBLIC_ACCESS }
+        - { path: ^/api/comment/add,        roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
