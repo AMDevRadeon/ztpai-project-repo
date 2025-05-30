@@ -7,6 +7,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Entity\User;
 use App\Entity\Topic;
 use App\Entity\Comment;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -16,25 +19,35 @@ class Post
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['post-frontend'])]
     private ?int $pid = null;
 
     #[ORM\Column]
     private ?int $tid = null;
 
     #[ORM\Column]
+    #[Groups(['post-frontend'])]
     private ?int $uid = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
+    #[Groups(['post-frontend'])]
     private \DateTimeImmutable $postCreationTimestamp;
 
     #[ORM\Column(length: 512)]
+    #[Groups(['post-frontend'])]
     private string $title;
 
     #[ORM\Column(length: 8192)]
+    #[Groups(['post-frontend'])]
     private string $content;
 
     #[ORM\Column]
+    #[Groups(['post-frontend'])]
     private bool $isArchived = false;
+
+    #[ORM\Column]
+    #[Groups(['post-frontend'])]
+    private bool $isClosed = false;
 
     #[ORM\ManyToOne(inversedBy: 'userPosts')]
     #[ORM\JoinColumn(name: 'uid', referencedColumnName: 'uid', nullable: false)]
@@ -111,6 +124,18 @@ class Post
     }
 
     public function setIsArchived(?bool $isArchived): static
+    {
+        $this->isArchived = $isArchived;
+
+        return $this;
+    }
+
+    public function getIsClosed(): ?bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setIsClosed(?bool $isArchived): static
     {
         $this->isArchived = $isArchived;
 
