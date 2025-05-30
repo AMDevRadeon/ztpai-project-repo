@@ -259,6 +259,12 @@ final class AdminController extends AbstractController
             $topic->setIsArchived($payload['archived'] ?: false);
         }
 
+        $errors = $validator->validate($topic);
+        if (count($errors) > 0) {
+            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+                               Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $em->persist($topic);
         $em->flush();
 

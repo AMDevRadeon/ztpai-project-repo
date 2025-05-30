@@ -63,8 +63,8 @@ class Post
 
     public function __construct()
     {
-        $this->topicCreationTimestamp = new \DateTimeImmutable();
-        $this->comments               = new ArrayCollection();
+        $this->postCreationTimestamp = new \DateTimeImmutable();
+        $this->comments              = new ArrayCollection();
     }
 
     public function getPid(): ?int
@@ -77,12 +77,19 @@ class Post
         return $this->tid;
     }
 
+    public function setTid(int $tid): static
+    {
+        $this->tid = $tid;
+
+        return $this;
+    }
+
     public function getUid(): ?int
     {
         return $this->uid;
     }
 
-    public function setUid(User $uid): static
+    public function setUid(int $uid): static
     {
         $this->uid = $uid;
 
