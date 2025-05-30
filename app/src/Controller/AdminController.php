@@ -8,6 +8,7 @@ use App\Entity\UserSettings;
 use App\Entity\Topic;
 use App\Repository\UserRepository;
 use App\Repository\TopicRepository;
+use App\Repository\PostRepository;
 use App\Service\ValidJSONStructure;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -266,6 +267,60 @@ final class AdminController extends AbstractController
         }
 
         $em->persist($topic);
+        $em->flush();
+
+        return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
+    }
+
+    #[OA\Tag(name: 'Admin')]
+    #[Route('api/admin/post/edit', name: 'api_admin_post_edit', methods: ['PATCH'])]
+    public function editPost(Request $req,
+                             TokenInterface $sec,
+                             PostRepository $repo,
+                             ValidatorInterface $validator,
+                             EntityManagerInterface $em): JsonResponse
+    {
+        $user = $sec->getUser();
+        if (!$user) 
+        { 
+            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+                               Response::HTTP_UNAUTHORIZED);
+        }
+
+        $payload = $req->toArray();
+
+        $missing_key = ValidJSONStructure::checkKeys($payload, 'pid');
+
+        if ($missing_key !== NULL)
+        {
+            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+                               Response::HTTP_BAD_REQUEST);
+        }
+
+        $post = $repo->find($payload['pid']);
+
+        if (!$post) {
+            return $this->json(['desc' => 'Post not found', 'code' => Response::HTTP_BAD_REQUEST],
+                                Response::HTTP_BAD_REQUEST);
+        }
+
+        if (isset($payload['archived'])) 
+        {
+            $post->setIsArchived($payload['archived'] ?: false);
+        }
+
+        if (isset($payload['closed'])) 
+        {
+            $post->setIsClosed($payload['closed'] ?: false);
+        }
+
+        $errors = $validator->validate($post);
+        if (count($errors) > 0) {
+            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+                               Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $em->persist($post);
         $em->flush();
 
         return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
