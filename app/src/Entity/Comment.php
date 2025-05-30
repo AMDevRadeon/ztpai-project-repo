@@ -38,7 +38,7 @@ class Comment
 
     public function __construct()
     {
-        $this->topicCreationTimestamp = new \DateTimeImmutable();
+        $this->commentCreationTimestamp = new \DateTimeImmutable();
     }
 
 
@@ -52,12 +52,19 @@ class Comment
         return $this->pid;
     }
 
+    public function setPid(int $pid): static
+    {
+        $this->pid = $pid;
+
+        return $this;
+    }
+
     public function getUid(): ?int
     {
         return $this->uid;
     }
 
-    public function setUid(User $uid): static
+    public function setUid(int $uid): static
     {
         $this->uid = $uid;
 
