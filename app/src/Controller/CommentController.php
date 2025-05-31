@@ -7,6 +7,7 @@ use App\Entity\Post;
 use App\Entity\Comment;
 use App\Entity\User;
 use App\Service\ValidJSONStructure;
+use App\Service\UniformResponse;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,7 +47,7 @@ final class CommentController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -59,8 +60,8 @@ final class CommentController extends AbstractController
 
         if (!$post) 
         {
-            return $this->json(['desc' => 'Post not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         // TODO: put in database directory or sumfin, i dunno
@@ -82,7 +83,7 @@ final class CommentController extends AbstractController
             'comments' => $result_query_comments,
         ];
 
-        return $this->json($data);
+        return $this->json(UniformResponse::createValid('Response', $data));
     }
 
     #[Route('api/comment/add', name: 'api_add_comment', methods: ['POST'])]
@@ -95,7 +96,7 @@ final class CommentController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -105,7 +106,7 @@ final class CommentController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -113,20 +114,20 @@ final class CommentController extends AbstractController
 
         if (!$post) 
         {
-            return $this->json(['desc' => 'Post not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getTopic()->getIsArchived())
         {
-            return $this->json(['desc' => 'Post belongs to archived topic (read only)', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post belongs to archived topic (read only)'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getIsClosed())
         {
-            return $this->json(['desc' => 'Post is closed (no new comments)', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post is closed (no new comments)'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         $comment = (new Comment())
@@ -138,14 +139,17 @@ final class CommentController extends AbstractController
 
         $errors = $validator->validate($comment);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($comment);
         $em->flush();
 
-        return $this->json(['desc' => "Created new comment on post: " . $post->getTitle(), 'code' => Response::HTTP_CREATED],
+
+        return $this->json(UniformResponse::createValid("Created new comment on post: {$post->getTitle()}", NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 }

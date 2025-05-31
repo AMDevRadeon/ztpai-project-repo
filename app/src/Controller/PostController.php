@@ -6,6 +6,7 @@ use App\Entity\Topic;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Service\ValidJSONStructure;
+use App\Service\UniformResponse;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,7 +46,7 @@ final class PostController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -58,8 +59,8 @@ final class PostController extends AbstractController
 
         if (!$topic) 
         {
-            return $this->json(['desc' => 'Topic not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Topic not found', Response::HTTP_BAD_REQUEST),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         // if ($topic->getIsArchived())
@@ -105,7 +106,7 @@ final class PostController extends AbstractController
             // 'users' => $result_query_users,
         ];
 
-        return $this->json($data);
+        return $this->json(UniformResponse::createValid('Response', $data));
     }
 
     #[Route('api/post/add', name: 'api_add_post', methods: ['POST'])]
@@ -117,8 +118,8 @@ final class PostController extends AbstractController
     {
         $user = $sec->getUser();
         if (!$user) 
-        { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+        {
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -128,7 +129,7 @@ final class PostController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -136,8 +137,8 @@ final class PostController extends AbstractController
 
         if (!$topic) 
         {
-            return $this->json(['desc' => 'Topic not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Topic not found', Response::HTTP_BAD_REQUEST),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         $post = (new Post())
@@ -152,14 +153,16 @@ final class PostController extends AbstractController
 
         $errors = $validator->validate($post);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($post);
         $em->flush();
 
-        return $this->json(['desc' => "Created new post: " . $post->getTitle(), 'code' => Response::HTTP_CREATED],
+        return $this->json(UniformResponse::createValid("Created new post: {$post->getTitle()}", NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 
@@ -174,7 +177,7 @@ final class PostController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -184,7 +187,7 @@ final class PostController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -192,40 +195,42 @@ final class PostController extends AbstractController
 
         if (!$post) 
         {
-            return $this->json(['desc' => 'Post not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if ($user->getUid() !== $post->getUid())
         {
-            return $this->json(['desc' => 'Cannot edit other users\' posts', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Cannot edit other users\' posts'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getIsArchived())
         {
-            return $this->json(['desc' => 'Post is archived (read only)', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post is archived (read only)'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getTopic()->getIsArchived())
         {
-            return $this->json(['desc' => 'Post belongs to archived topic (read only)', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post belongs to archived topic (read only)'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         $post->setContent("{$post->getContent()}\n[EDIT (" . date("Y-m-d H:i:s") . ")]:\n{$payload['content']}");
 
         $errors = $validator->validate($post);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($post);
         $em->flush();
 
-        return $this->json(['desc' => "Updated", 'code' => Response::HTTP_CREATED],
+        return $this->json(UniformResponse::createValid('Updated', NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 }

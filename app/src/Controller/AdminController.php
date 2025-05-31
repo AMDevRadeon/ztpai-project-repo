@@ -10,6 +10,7 @@ use App\Repository\UserRepository;
 use App\Repository\TopicRepository;
 use App\Repository\PostRepository;
 use App\Service\ValidJSONStructure;
+use App\Service\UniformResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -81,9 +82,9 @@ final class AdminController extends AbstractController
                                EntityManagerInterface $em): JsonResponse
     {
         $user = $sec->getUser();
-        if (!$user) 
+        if (!$user)
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -94,28 +95,30 @@ final class AdminController extends AbstractController
         // Required fields
         if ($missing_key !== NULL) 
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
         $u = $repo->find($payload["uid"]);
         if (!$u) 
         {
-            return $this->json(['desc' => 'User not found', 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid('User not found'),
                                Response::HTTP_BAD_REQUEST);
         }
 
         if ($u->getPasshash() === '-')
         {
-            return $this->json(['desc' => 'Already deleted', 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid('Already deleted'),
                                Response::HTTP_BAD_REQUEST);
         }
 
         if ($user->getUid() === $u->getUid())
         {
-            return $this->json(['desc' => 'Trying to delete self', 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid('Trying to delete self'),
                                Response::HTTP_BAD_REQUEST);
         }
+
+        $nick_before = $u->getNick();
 
         $u->setNick('Deleted_User_' . strval(time()));
         $u->setPasshash('-');
@@ -126,7 +129,7 @@ final class AdminController extends AbstractController
         $em->persist($u);
         $em->flush();
 
-        return $this->json(['desc' => 'Deleted', 'code' => Response::HTTP_OK]);
+        return $this->json(UniformResponse::createValid("Deleted user: $nick_before"));
     }
 
 
@@ -140,7 +143,7 @@ final class AdminController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -150,7 +153,7 @@ final class AdminController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -162,14 +165,16 @@ final class AdminController extends AbstractController
 
         $errors = $validator->validate($topic);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($topic);
         $em->flush();
 
-        return $this->json(['desc' => "Created new topic: " . $topic->getTitle(), 'code' => Response::HTTP_CREATED],
+        return $this->json(UniformResponse::createValid("Created new topic: {$topic->getTitle()}", NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 
@@ -185,7 +190,7 @@ final class AdminController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -195,21 +200,21 @@ final class AdminController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
         $topic = $repo->find($payload['tid']);
 
         if (!$topic) {
-            return $this->json(['desc' => 'Topic not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Topic not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         $em->remove($topic);
         $em->flush();
 
-        return $this->json(['desc' => 'Deleted', 'code' => Response::HTTP_OK]);
+        return $this->json(UniformResponse::createValid('Deleted'));
     }
 
 
@@ -224,7 +229,7 @@ final class AdminController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -234,15 +239,15 @@ final class AdminController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
         $topic = $repo->find($payload['tid']);
 
         if (!$topic) {
-            return $this->json(['desc' => 'Topic not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Topic not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if (isset($payload['title'])) 
@@ -262,14 +267,16 @@ final class AdminController extends AbstractController
 
         $errors = $validator->validate($topic);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($topic);
         $em->flush();
 
-        return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
+        return $this->json(UniformResponse::createValid('Updated'));
     }
 
     #[OA\Tag(name: 'Admin')]
@@ -283,7 +290,7 @@ final class AdminController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED], 
+            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
@@ -293,15 +300,15 @@ final class AdminController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
         $post = $repo->find($payload['pid']);
 
         if (!$post) {
-            return $this->json(['desc' => 'Post not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('Post not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         if (isset($payload['archived'])) 
@@ -316,13 +323,15 @@ final class AdminController extends AbstractController
 
         $errors = $validator->validate($post);
         if (count($errors) > 0) {
-            return $this->json(['desc' => $errors->get(0)->getPropertyPath() . ': ' . $errors->get(0)->getMessage(), 'code' => Response::HTTP_UNPROCESSABLE_ENTITY],
+            return $this->json(UniformResponse::createInvalid(
+                                   "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
+                                   Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $em->persist($post);
         $em->flush();
 
-        return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
+        return $this->json(UniformResponse::createValid('Updated'));
     }
 }

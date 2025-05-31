@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Topic;
 use App\Service\ValidJSONStructure;
+use App\Service\UniformResponse;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +33,7 @@ final class TopicController extends AbstractController
 
         if ($missing_key !== NULL)
         {
-            return $this->json(["desc" => "Missing $missing_key", 'code' => Response::HTTP_BAD_REQUEST],
+            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -57,6 +58,6 @@ final class TopicController extends AbstractController
             'topics' => $result_query
         ];
 
-        return $this->json($data);
+        return $this->json(UniformResponse::createValid('Response', $data));
     }
 }

@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
+use App\Service\ValidJSONStructure;
+use App\Service\UniformResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,9 +15,37 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use OpenApi\Attributes as OA;
 
+trait ValidateRequest
+{
+    protected function validate(Request &$req, ...$keys): array
+    {
+        $payload = $req->toArray();
+        $missing_key = ValidJSONStructure::checkKeys($payload, ...$keys);
+
+        if ($missing_key !== NULL)
+        {
+            return [
+                'payload' => $payload,
+                'error' => $this->json(
+                    UniformResponse::createInvalid(
+                        "Missing $missing_key key"
+                    ),
+                    Response::HTTP_BAD_REQUEST
+                )
+                ];
+        }
+
+        return [
+            'payload' => $payload,
+            'error' => NULL
+        ];
+    }
+}
 
 class UserController extends AbstractController
 {
+    use ValidateRequest;
+
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Returns data about user",
@@ -38,13 +68,20 @@ class UserController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'API')]
-    #[Route('/api/user/{uid}', name: 'api_user_public', methods: ['GET'])]
-    public function publicProfile(int $uid, UserRepository $repo): JsonResponse
+    #[Route('/api/user/get', name: 'api_user_get', methods: ['post'])]
+    public function publicProfile(Request $req,
+                                  UserRepository $repo): JsonResponse
     {
-        $u = $repo->find($uid);
+        $payload = $this->validate($req, 'uid');
+        if ($payload['error'] !== NULL)
+        {
+            return $payload['error'];
+        }
+
+        $u = $repo->find($payload['payload']['uid']);
         if (!$u) {
-            return $this->json(['desc' => 'User not found', 'code' => Response::HTTP_BAD_REQUEST],
-                                Response::HTTP_BAD_REQUEST);
+            return $this->json(UniformResponse::createInvalid('User not found'),
+                               Response::HTTP_BAD_REQUEST);
         }
 
         $data = [
@@ -60,7 +97,7 @@ class UserController extends AbstractController
             $data['email'] = $u->getEmail();
         }
 
-        return $this->json($data);
+        return $this->json(UniformResponse::createValid('Response', $data));
     }
 
 
@@ -112,8 +149,9 @@ class UserController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(['desc' => 'Unauthorized', 'code' => Response::HTTP_UNAUTHORIZED],
-                               Response::HTTP_UNAUTHORIZED);
+            return $this->json(
+                UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED),
+                Response::HTTP_UNAUTHORIZED);
         }
 
         $payload = json_decode($req->getContent(), true);
@@ -136,6 +174,6 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        return $this->json(['desc' => 'Updated', 'code' => Response::HTTP_OK]);
+        return $this->json(UniformResponse::createValid('Updated'));
     }
 }
