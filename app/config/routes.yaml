@@ -12,13 +12,13 @@ app.swagger_ui:
     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
 
 api_login_check:
-    path: /api/login_check
+    path: /api/v1/login_check
     methods: [POST]
 
 api_token_refresh:
-    path: /api/token_refresh
+    path: /api/v1/token_refresh
     methods: [POST]
 
 api_token_invalidate:
-    path: /api/token_invalidate
+    path: /api/v1/token_invalidate
     methods: [POST]

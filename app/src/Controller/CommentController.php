@@ -37,7 +37,7 @@ use OpenApi\Attributes as OA;
 
 final class CommentController extends AbstractController
 {
-    #[Route('api/comment/get', name: 'api_get_comment', methods: ['POST'])]
+    #[Route('api/v1/comment/get', name: 'api_get_comment', methods: ['POST'])]
     public function getComments(Request $req,
                                 EntityManagerInterface $em,
                                 PostRepository $repo): JsonResponse
@@ -77,7 +77,7 @@ final class CommentController extends AbstractController
         return $this->json(UniformResponse::createValid('Response', $data));
     }
 
-    #[Route('api/comment/add', name: 'api_add_comment', methods: ['POST'])]
+    #[Route('api/v1/comment/add', name: 'api_add_comment', methods: ['POST'])]
     public function addComment(Request $req,
                                TokenInterface $sec,
                                ValidatorInterface $validator,

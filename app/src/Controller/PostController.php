@@ -36,7 +36,7 @@ use OpenApi\Attributes as OA;
 
 final class PostController extends AbstractController
 {
-    #[Route('api/post/get', name: 'api_get_post', methods: ['POST'])]
+    #[Route('api/v1/post/get', name: 'api_get_post', methods: ['POST'])]
     public function getPosts(Request $req,
                               EntityManagerInterface $em,
                               TopicRepository $repo): JsonResponse
@@ -85,7 +85,7 @@ final class PostController extends AbstractController
         return $this->json(UniformResponse::createValid('Response', $data));
     }
 
-    #[Route('api/post/add', name: 'api_add_post', methods: ['POST'])]
+    #[Route('api/v1/post/add', name: 'api_add_post', methods: ['POST'])]
     public function addPost(Request $req,
                             TokenInterface $sec,
                             ValidatorInterface $validator,
@@ -143,7 +143,7 @@ final class PostController extends AbstractController
     }
 
 
-    #[Route('api/post/edit', name: 'api_edit_post', methods: ['PATCH'])]
+    #[Route('api/v1/post/edit', name: 'api_edit_post', methods: ['PATCH'])]
     public function editPost(Request $req,
                              TokenInterface $sec,
                              ValidatorInterface $validator,

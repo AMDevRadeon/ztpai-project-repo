@@ -72,7 +72,7 @@ class AuthController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'API')]
-    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+    #[Route('/api/v1/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request,
                              EntityManagerInterface $em,
                              UserPasswordHasherInterface $hasher,

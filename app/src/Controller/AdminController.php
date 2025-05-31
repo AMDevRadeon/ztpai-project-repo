@@ -75,7 +75,7 @@ final class AdminController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'Admin')]
-    #[Route('api/admin/user/delete', name: 'api_admin_user_delete', methods: ['DELETE'])]
+    #[Route('api/v1/admin/user/delete', name: 'api_admin_user_delete', methods: ['DELETE'])]
     public function deleteUser(Request $req,
                                TokenInterface $sec,
                                UserRepository $repo,
@@ -134,7 +134,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Tag(name: 'Admin')]
-    #[Route('api/admin/topic/add', name: 'api_admin_topic_add', methods: ['POST'])]
+    #[Route('api/v1/admin/topic/add', name: 'api_admin_topic_add', methods: ['POST'])]
     public function addTopic(Request $req,
                              TokenInterface $sec,
                              ValidatorInterface $validator,
@@ -180,7 +180,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Tag(name: 'Admin')]
-    #[Route('api/admin/topic/delete', name: 'api_admin_topic_delete', methods: ['DELETE'])]
+    #[Route('api/v1/admin/topic/delete', name: 'api_admin_topic_delete', methods: ['DELETE'])]
     public function deleteTopic(Request $req,
                                 TokenInterface $sec,
                                 TopicRepository $repo,
@@ -219,7 +219,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Tag(name: 'Admin')]
-    #[Route('api/admin/topic/edit', name: 'api_admin_topic_edit', methods: ['PATCH'])]
+    #[Route('api/v1/admin/topic/edit', name: 'api_admin_topic_edit', methods: ['PATCH'])]
     public function editTopic(Request $req,
                               TokenInterface $sec,
                               TopicRepository $repo,
@@ -280,7 +280,7 @@ final class AdminController extends AbstractController
     }
 
     #[OA\Tag(name: 'Admin')]
-    #[Route('api/admin/post/edit', name: 'api_admin_post_edit', methods: ['PATCH'])]
+    #[Route('api/v1/admin/post/edit', name: 'api_admin_post_edit', methods: ['PATCH'])]
     public function editPost(Request $req,
                              TokenInterface $sec,
                              PostRepository $repo,

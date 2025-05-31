@@ -24,7 +24,7 @@ use OpenApi\Attributes as OA;
 
 final class TopicController extends AbstractController
 {
-    #[Route('api/topic/get', name: 'api_get_topic', methods: ['POST'])]
+    #[Route('api/v1/topic/get', name: 'api_get_topic', methods: ['POST'])]
     public function getTopics(Request $req,
                               EntityManagerInterface $em,
                               TopicRepository $repo): JsonResponse

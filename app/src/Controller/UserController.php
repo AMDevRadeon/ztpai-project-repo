@@ -68,7 +68,7 @@ class UserController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'API')]
-    #[Route('/api/user/get', name: 'api_user_get', methods: ['post'])]
+    #[Route('/api/v1/user/get', name: 'api_user_get', methods: ['post'])]
     public function publicProfile(Request $req,
                                   UserRepository $repo): JsonResponse
     {
@@ -140,7 +140,7 @@ class UserController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'API')]
-    #[Route('/api/user/me', name: 'api_user_me', methods: ['PATCH'])]
+    #[Route('/api/v1/user/me', name: 'api_user_me', methods: ['PATCH'])]
     public function updateMe(Request $req,
                              TokenInterface $sec,
                              EntityManagerInterface $em,
