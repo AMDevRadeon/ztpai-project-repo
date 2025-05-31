@@ -6,6 +6,8 @@ use App\Entity\Topic;
 use App\Service\ValidJSONStructure;
 use App\Service\UniformResponse;
 
+use App\Database\TopicDatabaseQueries;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,15 +44,7 @@ final class TopicController extends AbstractController
 
         $limit = $limit > 128 ? 128 : $limit;
 
-        // Database logic
-        $query_builder = $em->createQueryBuilder();
-        $result_query = $query_builder
-            ->select('t.tid', 't.uid', 't.topicCreationTimestamp', 't.title', 't.content')
-            ->from(Topic::class, 't')
-            ->orderBy('t.topicCreationTimestamp', 'DESC')
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->getQuery()
+        $result_query = TopicDatabaseQueries::getTopics($em, $offset, $limit)
             ->getResult();
 
         $data = [

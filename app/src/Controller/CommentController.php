@@ -8,6 +8,7 @@ use App\Entity\Comment;
 use App\Entity\User;
 use App\Service\ValidJSONStructure;
 use App\Service\UniformResponse;
+use App\Database\CommentDatabaseQueries;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -64,17 +65,7 @@ final class CommentController extends AbstractController
                                Response::HTTP_BAD_REQUEST);
         }
 
-        // TODO: put in database directory or sumfin, i dunno
-        $query_builder = $em->createQueryBuilder();
-        $result_query_comments = $query_builder
-            ->select('t.cid', 't.uid', 't.commentCreationTimestamp', 't.content')
-            ->from(Comment::class, 't')
-            ->where('t.pid = :current_pid')
-            ->orderBy('t.commentCreationTimestamp', 'DESC')
-            ->setParameter('current_pid', $post->getPid())
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->getQuery()
+        $result_query_comments = CommentDatabaseQueries::getComments($em, $post->getPid(), $offset, $limit)
             ->getResult();
 
         $data = [

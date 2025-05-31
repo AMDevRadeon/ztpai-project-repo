@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Topic;
 use App\Entity\Post;
 use App\Entity\User;
+use App\Database\PostDatabaseQueries;
 use App\Service\ValidJSONStructure;
 use App\Service\UniformResponse;
 
@@ -63,33 +64,8 @@ final class PostController extends AbstractController
                                Response::HTTP_BAD_REQUEST);
         }
 
-        // if ($topic->getIsArchived())
-        // {
-        //     return $this->json(['desc' => 'Topic is archived (read only)', 'code' => Response::HTTP_BAD_REQUEST],
-        //                         Response::HTTP_BAD_REQUEST);
-        // }
-
-        // TODO: put in database directory or sumfin, i dunno
-        $query_builder = $em->createQueryBuilder();
-        $result_query_posts = $query_builder
-            ->select('t.pid', 't.uid', 't.postCreationTimestamp', 't.title', 't.content', 't.isArchived', 't.isClosed')
-            ->from(Post::class, 't')
-            ->where('t.tid = :current_tid')
-            ->orderBy('t.postCreationTimestamp', 'DESC')
-            ->setParameter('current_tid', $topic->getTid())
-            ->setFirstResult($offset)
-            ->setMaxResults($limit)
-            ->getQuery()
+        $result_query_posts = PostDatabaseQueries::getPosts($em, $topic->getTid(), $offset, $limit)
             ->getResult();
-
-        // $query_builder = $em->createQueryBuilder();
-        // $result_query_users = $query_builder
-        //     ->select('u.uid', 'u.nick', 'u.email', 'u.accCreationTimestamp', 'u.provenance', 'u.motto', 'us.display_email')
-        //     ->from(User::class, 'u')
-        //     ->where($query_builder->expr()->in('u.uid', array_column($result_query_posts, 'uid')))
-        //     ->join('u.settings', 'us')
-        //     ->getQuery()
-        //     ->getResult();
 
         // $result_query_users = array_map(function (array $x) {
         //     if (!$x['display_email'])
