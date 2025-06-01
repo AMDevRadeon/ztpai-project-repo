@@ -51,13 +51,16 @@ class UserController extends AbstractController
         description: "Returns data about user",
         content: new OA\JsonContent(
             type: 'object',
-            example: <<<EXAMPLE
-                {
-                    "uid": "1",
-                    "nick": "alfa",
-                    "motto": "Jest jak jest"
-                }
-            EXAMPLE
+            example: 
+                [
+                    "desc" => "Response",
+                    "status" => 200,
+                    "value" => [
+                        "nick" => "alfa",
+                        "motto" => "Jest jak jest",
+                        "provenance" => "Bywa"
+                    ]
+                ]
         )
     )]
     #[OA\Response(
@@ -65,9 +68,35 @@ class UserController extends AbstractController
         description: "No data about user with provided UID",
         content: new OA\JsonContent(
             type: 'object',
+            example:
+                [
+                    "desc" => "User not found",
+                    "status" => 400,
+                ]
         )
     )]
-    #[OA\Tag(name: 'API')]
+    #[OA\RequestBody(
+        required: true,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'uid'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'uid',
+                        type: 'integer',
+                        description: "User ID"
+                    )
+                ]
+            ),
+            example: [
+                "uid" => 1
+            ]
+        )]
+    )]
+    #[OA\Tag(name: 'Content')]
     #[Route('/api/v1/user/get', name: 'api_user_get', methods: ['post'])]
     public function publicProfile(Request $req,
                                   UserRepository $repo): JsonResponse
@@ -101,7 +130,14 @@ class UserController extends AbstractController
     }
 
 
-
+    #[OA\Patch(
+        summary: "Requires JWT from user or higher",
+        security: [
+            [
+                'jwt' => []
+            ]
+        ]
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Data successfully commited to database",
@@ -130,16 +166,35 @@ class UserController extends AbstractController
     )]
     #[OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(
-            type: 'object',
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(
+                        property: 'motto',
+                        type: 'string',
+                        description: "If provided, change account motto"
+                    ),
+                    new OA\Property(
+                        property: 'provenance',
+                        type: 'string',
+                        description: "If provided, change account provenance"
+                    ),
+                    new OA\Property(
+                        property: 'password',
+                        type: 'string',
+                        description: "If provided, change account password"
+                    ),
+                ]
+            ),
             example:[
                 "motto" => "new_motto",
                 "provenance" => "new_provenance",
                 "password" => "new_password"
             ]
-        )
+        )]
     )]
-    #[OA\Tag(name: 'API')]
+    #[OA\Tag(name: 'User')]
     #[Route('/api/v1/user/me', name: 'api_user_me', methods: ['PATCH'])]
     public function updateMe(Request $req,
                              TokenInterface $sec,

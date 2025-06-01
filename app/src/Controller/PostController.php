@@ -33,9 +33,96 @@ use Nelmio\ApiDocBundle\Attribute\Model;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use OpenApi\Attributes as OA;
 
+// #[OA\SecurityScheme(
+//     type: 'apiKey',
+//     in: 'cookie',
+//     name: 'BEARER',
+//     securityScheme: 'jwt'
+// )]
+// class OpenApiSpec
+// {}
 
 final class PostController extends AbstractController
 {
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Returns list of posts in given topic",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: 
+                [
+                    "desc" => "Response",
+                    "status" => 200,
+                    "value" => [
+                        "tid" => 7,
+                        "count" => 1,
+                        "posts" =>
+                        [
+                            [
+                                "pid" => 8,
+                                "uid" => 12,
+                                "postCreationTimestamp" => "2025-05-30T17:18:49+00:00",
+                                "title" => "Inspiring title",
+                                "content" => "Inspiring content",
+                                "isArchived" => false,
+                                "isClosed" => false
+                            ]
+                        ]
+                    ]
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: <<<DESC
+            Offset and/or limit and/or tid were ommited in request body, 
+            Could not find topic corresponding to tid
+        DESC,
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Missing limit key",
+                    "status" => 400,
+                ]
+        )
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'tid',
+                    'offset',
+                    'limit'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'tid',
+                        type: 'integer',
+                        description: "Topic ID"
+                    ),
+                    new OA\Property(
+                        property: 'offset',
+                        type: 'integer',
+                        description: "Index from which controller starts listing posts"
+                    ),
+                    new OA\Property(
+                        property: 'limit',
+                        type: 'integer',
+                        description: "Max count of posts per request. No greater than 128"
+                    )
+                ]
+            ),
+            example: [
+                "tid" => 19,
+                "offset" => 0,
+                "limit" => 10
+            ]
+        )]
+    )]
+    #[OA\Tag(name: 'Content')]
     #[Route('api/v1/post/get', name: 'api_get_post', methods: ['POST'])]
     public function getPosts(Request $req,
                               EntityManagerInterface $em,
@@ -85,6 +172,103 @@ final class PostController extends AbstractController
         return $this->json(UniformResponse::createValid('Response', $data));
     }
 
+    #[OA\Post(
+        summary: "Requires JWT from user or higher",
+        security: [
+            [
+                'jwt' => []
+            ]
+        ]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'tid',
+                    'title',
+                    'content'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'tid',
+                        type: 'integer',
+                        description: "Topic ID"
+                    ),
+                    new OA\Property(
+                        property: 'title',
+                        type: 'string',
+                        description: "Title for created post"
+                    ),
+                    new OA\Property(
+                        property: 'content',
+                        type: 'string',
+                        description: "Specify further topic of discussion"
+                    )
+                ]
+            ),
+            example: [
+                "tid" => 19,
+                "title" => 'Inspiring title',
+                "content" => 'Inspiring content'
+            ]
+        )]
+    )]
+    #[OA\Response(
+        response: Response::HTTP_CREATED,
+        description: "User successfully created",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Created new post: Inspiring title",
+                    "code": 201
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: <<<DESC
+            tid and/or title and/or content were ommited in request body,
+            topic not found
+        DESC,
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Missing title key",
+                    "status" => 400,
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNAUTHORIZED,
+        description: "Trying to access endpoint without credentials",
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Unauthorized",
+                    "status" => 401,
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNPROCESSABLE_ENTITY,
+        description: "Constraints not met",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "title: This value is too long. It should have 512 characters or less.",
+                    "code": 422
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Tag(name: 'User')]
     #[Route('api/v1/post/add', name: 'api_add_post', methods: ['POST'])]
     public function addPost(Request $req,
                             TokenInterface $sec,
@@ -143,6 +327,98 @@ final class PostController extends AbstractController
     }
 
 
+    #[OA\Patch(
+        summary: "Requires JWT from user or higher",
+        security: [
+            [
+                'jwt' => []
+            ]
+        ]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'pid',
+                    'content'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'pid',
+                        type: 'integer',
+                        description: "Edited post's ID"
+                    ),
+                    new OA\Property(
+                        property: 'content',
+                        type: 'string',
+                        description: "Additional content"
+                    )
+                ]
+            ),
+            example: [
+                "pid" => 23,
+                "content" => 'Additional inspiring content'
+            ]
+        )]
+    )]
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Successfully modified post in question",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "Updated",
+                    "code": 200
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: <<<DESC
+            pid and/or content were ommited in request body,
+            post not found,
+            tried to edit post that does not belong to requesting user,
+            post is archived or belongs to archived topic
+        DESC,
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Missing title key",
+                    "status" => 400,
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNAUTHORIZED,
+        description: "Trying to access endpoint without credentials",
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Unauthorized",
+                    "status" => 401,
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_UNPROCESSABLE_ENTITY,
+        description: "Constraints not met",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: <<<EXAMPLE
+                {
+                    "desc": "content: This value is too long. It should have 8192 characters or less.",
+                    "code": 422
+                }
+            EXAMPLE
+        )
+    )]
+    #[OA\Tag(name: 'User')]
     #[Route('api/v1/post/edit', name: 'api_edit_post', methods: ['PATCH'])]
     public function editPost(Request $req,
                              TokenInterface $sec,
@@ -206,7 +482,7 @@ final class PostController extends AbstractController
         $em->persist($post);
         $em->flush();
 
-        return $this->json(UniformResponse::createValid('Updated', NULL, Response::HTTP_CREATED),
-                           Response::HTTP_CREATED);
+        return $this->json(UniformResponse::createValid('Updated'),
+                           Response::HTTP_OK);
     }
 }

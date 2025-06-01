@@ -4,6 +4,111 @@ nelmio_api_doc:
             title: "Physcussions server API documentation"
             description: "Documentation generated with NelmioApiDocBundle"
             version: "0.2.3"
+        components:
+            securitySchemes:
+                jwt:
+                    type: apiKey
+                    bearerFormat: jwt
+                    in: cookie
+                    name: BEARER
+        paths:
+            /api/v1/login_check:
+                post:
+                    tags:
+                        - API
+                    description: Get the JWT and refresh token
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    required:
+                                        - email
+                                        - password
+                                    properties:
+                                        email:
+                                            type: string
+                                            description: Email of registered user
+                                        passsword:
+                                            type: string
+                                            description: Password of registered user
+                                example:
+                                    email: "beta@gamma.delta"
+                                    password: "kwakwa5!"
+                    responses:
+                        '200':
+                            description: Login successful
+                            content:
+                                application/json:
+                                    example:
+                                        refresh_token: f396c0a6a129f05d5f080a3e7cac9a6b02b7aad43a550f1eb6d1cf506639233807fbbdb9f1be49423fc2922e89e67c32ad01bda2da05b7dee478384e4e67a368
+                        '401':
+                            description: Invalid credentials
+                            content:
+                                application/json:
+                                    example:
+                                        code: 401
+                                        message: Invalid credentials.
+
+            /api/v1/token_refresh:
+                post:
+                    tags:
+                        - API
+                    description: Regenerate JWT with valid refresh token
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    required:
+                                        - refresh_token
+                                    properties:
+                                        refresh_token:
+                                            type: string
+                                            description: Value returned from login_check endpoint
+                                example:
+                                    refresh_token: f396c0a6a129f05d5f080a3e7cac9a6b02b7aad43a550f1eb6d1cf506639233807fbbdb9f1be49423fc2922e89e67c32ad01bda2da05b7dee478384e4e67a368
+                    responses:
+                        '200':
+                            description: JWT refreshed
+                            content:
+                                application/json:
+                                    example:
+                                        refresh_token: f396c0a6a129f05d5f080a3e7cac9a6b02b7aad43a550f1eb6d1cf506639233807fbbdb9f1be49423fc2922e89e67c32ad01bda2da05b7dee478384e4e67a368
+                        '401':
+                            description: JWT Refresh token not found
+                            content:
+                                application/json:
+                                    example:
+                                        code: 401
+                                        message: JWT Refresh Token Not Found.
+
+            /api/v1/token_invalidate:
+                post:
+                    tags:
+                        - API
+                    description: Rid user of saved session
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    required:
+                                        - refresh_token
+                                    properties:
+                                        refresh_token:
+                                            type: string
+                                            description: Value returned from login_check endpoint
+                                example:
+                                    refresh_token: f396c0a6a129f05d5f080a3e7cac9a6b02b7aad43a550f1eb6d1cf506639233807fbbdb9f1be49423fc2922e89e67c32ad01bda2da05b7dee478384e4e67a368
+                    responses:
+                        '200':
+                            description: Removal successful OR refresh token already invalid
+                            content:
+                                application/json:
+                                    example:
+                                        code: 200
+                                        message: The supplied refresh_token has been invalidated.
     areas:
         default:
             path_patterns: # an array of regexps (document only routes under /api, except /api/doc)

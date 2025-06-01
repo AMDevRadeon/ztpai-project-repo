@@ -62,14 +62,48 @@ class AuthController extends AbstractController
     )]    
     #[OA\RequestBody(
         required: true,
-        content: new OA\JsonContent(
-            type: Object::class,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'nick',
+                    'email',
+                    'password'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'nick',
+                        type: 'string',
+                        description: "Nickname of newly created user"
+                    ),
+                    new OA\Property(
+                        property: 'email',
+                        type: 'string',
+                        description: "Email associated with the account"
+                    ),
+                    new OA\Property(
+                        property: 'password',
+                        type: 'string',
+                        description: "Password to the account"
+                    ),
+                    new OA\Property(
+                        property: 'provenance',
+                        type: 'string',
+                        description: "Voluntary field describing where user lives"
+                    ),
+                    new OA\Property(
+                        property: 'motto',
+                        type: 'string',
+                        description: "Short, memorable quote"
+                    )
+                ]
+            ),
             example: [
                 "nick" => "user",
                 "email" => "email@test.com",
                 "password" => "password"
             ]
-        )
+        )]
     )]
     #[OA\Tag(name: 'API')]
     #[Route('/api/v1/register', name: 'api_register', methods: ['POST'])]

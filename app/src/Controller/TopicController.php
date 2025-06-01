@@ -24,6 +24,71 @@ use OpenApi\Attributes as OA;
 
 final class TopicController extends AbstractController
 {
+    #[OA\Response(
+        response: Response::HTTP_OK,
+        description: "Returns list of topics",
+        content: new OA\JsonContent(
+            type: 'object',
+            example: 
+                [
+                    "desc" => "Response",
+                    "status" => 200,
+                    "value" => [
+                        "count" => 1,
+                        "topics" =>
+                        [
+                            [
+                                "tid" => 2,
+                                "uid" => 10,
+                                "topicCreationTimestamp" => "2025-05-30T17:18:49+00:00",
+                                "title" => "Inspiring title"
+                            ]
+                        ]
+                    ]
+                ]
+        )
+    )]
+    #[OA\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: "Offset and/or limit were ommited in request body",
+        content: new OA\JsonContent(
+            type: 'object',
+            example:
+                [
+                    "desc" => "Missing limit key",
+                    "status" => 400,
+                ]
+        )
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: [new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: [
+                    'offset',
+                    'limit'
+                ],
+                properties: [
+                    new OA\Property(
+                        property: 'offset',
+                        type: 'integer',
+                        description: "Index from which controller starts listing topics"
+                    ),
+                    new OA\Property(
+                        property: 'limit',
+                        type: 'integer',
+                        description: "Max count of topics per request. No greater than 128"
+                    )
+                ]
+            ),
+            example: [
+                "offset" => 0,
+                "limit" => 10
+            ]
+        )]
+    )]
+    #[OA\Tag(name: 'Content')]
     #[Route('api/v1/topic/get', name: 'api_get_topic', methods: ['POST'])]
     public function getTopics(Request $req,
                               EntityManagerInterface $em,
