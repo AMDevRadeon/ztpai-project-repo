@@ -37,6 +37,9 @@ use OpenApi\Attributes as OA;
 
 final class CommentController extends AbstractController
 {
+    #[OA\Post(
+        description: "Get list of all comments under specified post, paginated" 
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Returns list of comments in given post",
@@ -155,6 +158,7 @@ final class CommentController extends AbstractController
 
 
     #[OA\Post(
+        description: "Add new comment under a post",
         summary: "Requires JWT from user or higher",
         security: [
             [

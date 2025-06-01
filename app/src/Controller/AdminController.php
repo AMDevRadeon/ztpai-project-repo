@@ -26,6 +26,7 @@ use OpenApi\Attributes as OA;
 final class AdminController extends AbstractController
 {
     #[OA\Delete(
+        description: "Delete specified user's account",
         summary: "Requires JWT of user with administrative status",
         security: [
             [
@@ -158,6 +159,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Post(
+        description: "Add new topic to discuss",
         summary: "Requires JWT of user with administrative status",
         security: [
             [
@@ -279,6 +281,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Delete(
+        description: "Delete permanently topic of discussion",
         summary: "Requires JWT of user with administrative status",
         security: [
             [
@@ -389,6 +392,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Patch(
+        description: "Edit existing topic",
         summary: "Requires JWT of user with administrative status",
         security: [
             [
@@ -553,6 +557,7 @@ final class AdminController extends AbstractController
 
 
     #[OA\Patch(
+        description: "Edit status of provided post",
         summary: "Requires JWT of user with administrative status",
         security: [
             [

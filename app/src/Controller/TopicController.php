@@ -24,6 +24,9 @@ use OpenApi\Attributes as OA;
 
 final class TopicController extends AbstractController
 {
+    #[OA\Post(
+        description: "Get a list of all topics, paginated"
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Returns list of topics",

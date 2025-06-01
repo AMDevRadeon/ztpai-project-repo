@@ -46,6 +46,9 @@ class UserController extends AbstractController
 {
     use ValidateRequest;
 
+    #[OA\Post(
+        description: "Get publicly available information about the user"
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Returns data about user",
@@ -97,7 +100,7 @@ class UserController extends AbstractController
         )]
     )]
     #[OA\Tag(name: 'Content')]
-    #[Route('/api/v1/user/get', name: 'api_user_get', methods: ['post'])]
+    #[Route('/api/v1/user/get', name: 'api_user_get', methods: ['POST'])]
     public function publicProfile(Request $req,
                                   UserRepository $repo): JsonResponse
     {
@@ -131,6 +134,7 @@ class UserController extends AbstractController
 
 
     #[OA\Patch(
+        description: "Alter certain characteristics of account",
         summary: "Requires JWT from user or higher",
         security: [
             [

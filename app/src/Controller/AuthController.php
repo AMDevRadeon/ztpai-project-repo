@@ -21,6 +21,9 @@ use OpenApi\Attributes as OA;
 
 class AuthController extends AbstractController
 {
+    #[OA\Post(
+        description: "Register new user"
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "User successfully created",

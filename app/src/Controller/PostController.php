@@ -44,6 +44,9 @@ use OpenApi\Attributes as OA;
 
 final class PostController extends AbstractController
 {
+    #[OA\Post(
+        description: "Get list of all posts under specified topic, paginated"
+    )]
     #[OA\Response(
         response: Response::HTTP_OK,
         description: "Returns list of posts in given topic",
@@ -173,6 +176,7 @@ final class PostController extends AbstractController
     }
 
     #[OA\Post(
+        description: "Create new post under topic",
         summary: "Requires JWT from user or higher",
         security: [
             [
@@ -328,6 +332,7 @@ final class PostController extends AbstractController
 
 
     #[OA\Patch(
+        description: "Edit user's post",
         summary: "Requires JWT from user or higher",
         security: [
             [
