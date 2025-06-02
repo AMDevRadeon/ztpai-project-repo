@@ -144,6 +144,12 @@ final class PostController extends AbstractController
         $offset = intval($payload["offset"]);
         $limit = intval($payload["limit"]);
 
+        if ($offset < 0 || $limit <= 0)
+        {
+            return $this->json(UniformResponseService::createInvalid("Invalid values of offset and/or limit"),
+                               Response::HTTP_BAD_REQUEST);
+        }
+        
         $limit = $limit > 128 ? 128 : $limit;
 
         $topic = $repo->find($payload['tid']);
