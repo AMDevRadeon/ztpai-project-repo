@@ -5,12 +5,12 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\Response;
 
 
-class UniformResponse
+class UniformResponseService
 {
     public static function createInvalid(string $desc, int $status = Response::HTTP_BAD_REQUEST): array
     {
         return [
-            'desc' => "${desc}",
+            'desc' => "{$desc}",
             'status' => $status
         ];
     }
@@ -18,7 +18,7 @@ class UniformResponse
     public static function createValid(string $desc, mixed $body = NULL, int $status = Response::HTTP_OK): array
     {
         $json = [
-            'desc' => "${desc}",
+            'desc' => "{$desc}",
             'status' => $status,
         ];
 

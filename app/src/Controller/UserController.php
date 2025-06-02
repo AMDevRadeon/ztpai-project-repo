@@ -2,8 +2,8 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
-use App\Service\ValidJSONStructure;
-use App\Service\UniformResponse;
+use App\Service\ValidJSONStructureService;
+use App\Service\UniformResponseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,14 +20,14 @@ trait ValidateRequest
     protected function validate(Request &$req, ...$keys): array
     {
         $payload = $req->toArray();
-        $missing_key = ValidJSONStructure::checkKeys($payload, ...$keys);
+        $missing_key = ValidJSONStructureService::checkKeys($payload, ...$keys);
 
         if ($missing_key !== NULL)
         {
             return [
                 'payload' => $payload,
                 'error' => $this->json(
-                    UniformResponse::createInvalid(
+                    UniformResponseService::createInvalid(
                         "Missing $missing_key key"
                     ),
                     Response::HTTP_BAD_REQUEST
@@ -112,7 +112,7 @@ class UserController extends AbstractController
 
         $u = $repo->find($payload['payload']['uid']);
         if (!$u) {
-            return $this->json(UniformResponse::createInvalid('User not found'),
+            return $this->json(UniformResponseService::createInvalid('User not found'),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -129,7 +129,7 @@ class UserController extends AbstractController
             $data['email'] = $u->getEmail();
         }
 
-        return $this->json(UniformResponse::createValid('Response', $data));
+        return $this->json(UniformResponseService::createValid('Response', $data));
     }
 
 
@@ -209,7 +209,7 @@ class UserController extends AbstractController
         if (!$user) 
         { 
             return $this->json(
-                UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED),
+                UniformResponseService::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED),
                 Response::HTTP_UNAUTHORIZED);
         }
 
@@ -233,6 +233,6 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        return $this->json(UniformResponse::createValid('Updated'));
+        return $this->json(UniformResponseService::createValid('Updated'));
     }
 }

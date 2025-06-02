@@ -6,8 +6,8 @@ use App\Entity\Topic;
 use App\Entity\Post;
 use App\Entity\Comment;
 use App\Entity\User;
-use App\Service\ValidJSONStructure;
-use App\Service\UniformResponse;
+use App\Service\ValidJSONStructureService;
+use App\Service\UniformResponseService;
 use App\Database\CommentDatabaseQueries;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -123,11 +123,11 @@ final class CommentController extends AbstractController
     {
         $payload = $req->toArray();
 
-        $missing_key = ValidJSONStructure::checkKeys($payload, 'pid', 'offset', 'limit');
+        $missing_key = ValidJSONStructureService::checkKeys($payload, 'pid', 'offset', 'limit');
 
         if ($missing_key !== NULL)
         {
-            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
+            return $this->json(UniformResponseService::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -140,7 +140,7 @@ final class CommentController extends AbstractController
 
         if (!$post) 
         {
-            return $this->json(UniformResponse::createInvalid('Post not found'),
+            return $this->json(UniformResponseService::createInvalid('Post not found'),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -153,7 +153,7 @@ final class CommentController extends AbstractController
             'comments' => $result_query_comments,
         ];
 
-        return $this->json(UniformResponse::createValid('Response', $data));
+        return $this->json(UniformResponseService::createValid('Response', $data));
     }
 
 
@@ -260,17 +260,17 @@ final class CommentController extends AbstractController
         $user = $sec->getUser();
         if (!$user) 
         { 
-            return $this->json(UniformResponse::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
+            return $this->json(UniformResponseService::createInvalid('Unauthorized', Response::HTTP_UNAUTHORIZED), 
                                Response::HTTP_UNAUTHORIZED);
         }
 
         $payload = $req->toArray();
 
-        $missing_key = ValidJSONStructure::checkKeys($payload, 'pid', 'content');
+        $missing_key = ValidJSONStructureService::checkKeys($payload, 'pid', 'content');
 
         if ($missing_key !== NULL)
         {
-            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
+            return $this->json(UniformResponseService::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -278,19 +278,19 @@ final class CommentController extends AbstractController
 
         if (!$post) 
         {
-            return $this->json(UniformResponse::createInvalid('Post not found'),
+            return $this->json(UniformResponseService::createInvalid('Post not found'),
                                Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getTopic()->getIsArchived())
         {
-            return $this->json(UniformResponse::createInvalid('Post belongs to archived topic (read only)'),
+            return $this->json(UniformResponseService::createInvalid('Post belongs to archived topic (read only)'),
                                Response::HTTP_BAD_REQUEST);
         }
 
         if ($post->getIsClosed())
         {
-            return $this->json(UniformResponse::createInvalid('Post is closed (no new comments)'),
+            return $this->json(UniformResponseService::createInvalid('Post is closed (no new comments)'),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -303,7 +303,7 @@ final class CommentController extends AbstractController
 
         $errors = $validator->validate($comment);
         if (count($errors) > 0) {
-            return $this->json(UniformResponse::createInvalid(
+            return $this->json(UniformResponseService::createInvalid(
                                    "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
                                    Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -313,7 +313,7 @@ final class CommentController extends AbstractController
         $em->flush();
 
 
-        return $this->json(UniformResponse::createValid("Created new comment on post: {$post->getTitle()}", NULL, Response::HTTP_CREATED),
+        return $this->json(UniformResponseService::createValid("Created new comment on post: {$post->getTitle()}", NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 }

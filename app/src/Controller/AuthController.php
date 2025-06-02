@@ -5,7 +5,7 @@ use App\Entity\User;
 use App\Entity\UserRole;
 use App\Entity\UserSettings;
 use App\Message\UserDataForEmailMessage;
-use App\Service\UniformResponse;
+use App\Service\UniformResponseService;
 use App\Service\MailSender;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -121,7 +121,7 @@ class AuthController extends AbstractController
         // Required fields
         foreach (['nick', 'email', 'password'] as $field) {
             if (empty($payload[$field])) {
-                return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
+                return $this->json(UniformResponseService::createInvalid("Missing $field key"),
                                    Response::HTTP_BAD_REQUEST);
             }
         }
@@ -145,7 +145,7 @@ class AuthController extends AbstractController
 
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
-            return $this->json(UniformResponse::createInvalid(
+            return $this->json(UniformResponseService::createInvalid(
                                    "{$errors->get(0)->getPropertyPath()}: {$errors->get(0)->getMessage()}", 
                                    Response::HTTP_UNPROCESSABLE_ENTITY),
                                Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -163,7 +163,7 @@ class AuthController extends AbstractController
         $em->persist($settings);
         $em->flush();
 
-        return $this->json(UniformResponse::createValid("Created new user: {$user->getNick()}", NULL, Response::HTTP_CREATED),
+        return $this->json(UniformResponseService::createValid("Created new user: {$user->getNick()}", NULL, Response::HTTP_CREATED),
                            Response::HTTP_CREATED);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Topic;
-use App\Service\ValidJSONStructure;
-use App\Service\UniformResponse;
+use App\Service\ValidJSONStructureService;
+use App\Service\UniformResponseService;
 
 use App\Database\TopicDatabaseQueries;
 
@@ -99,11 +99,11 @@ final class TopicController extends AbstractController
     {
         $payload = $req->toArray();
 
-        $missing_key = ValidJSONStructure::checkKeys($payload, 'offset', 'limit');
+        $missing_key = ValidJSONStructureService::checkKeys($payload, 'offset', 'limit');
 
         if ($missing_key !== NULL)
         {
-            return $this->json(UniformResponse::createInvalid("Missing $missing_key key"),
+            return $this->json(UniformResponseService::createInvalid("Missing $missing_key key"),
                                Response::HTTP_BAD_REQUEST);
         }
 
@@ -120,6 +120,6 @@ final class TopicController extends AbstractController
             'topics' => $result_query
         ];
 
-        return $this->json(UniformResponse::createValid('Response', $data));
+        return $this->json(UniformResponseService::createValid('Response', $data));
     }
 }

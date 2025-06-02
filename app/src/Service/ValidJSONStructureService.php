@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-class ValidJSONStructure
+class ValidJSONStructureService
 {
     public static function existKeys(array &$arr, ...$keys): bool
     {
