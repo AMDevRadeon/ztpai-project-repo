@@ -79,7 +79,7 @@ final class UserControllerTest extends WebTestCase
         $crawler = self::$client->request('PATCH', "/api/v1/user/me");
         $response = self::$client->getResponse();
 
-        $this->assertResponseStatusCodeSame(500);
+        $this->assertResponseStatusCodeSame(401);
         $this->assertJson($response->getContent());
     }
 
