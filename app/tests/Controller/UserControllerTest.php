@@ -33,10 +33,10 @@ final class UserControllerTest extends WebTestCase
     {
         self::$client->jsonRequest(
             'POST',
-            '/api/login_check',
+            '/api/v1/login_check',
             [
-                'email' => "test_case_$i@email.com",
-                'password' => "passwd$i"
+                'email' => "test_case_$uid@email.com",
+                'password' => "passwd$uid"
             ]
         );
 
@@ -44,16 +44,16 @@ final class UserControllerTest extends WebTestCase
 
         return [
             'CONTENT_TYPE' => 'application/json',
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $data['token']
+            'HTTP_BEARER' => self::$client->getCookieJar()->get('BEARER')->getValue()
         ];
     }
 
     #[Test]
     #[DataProvider('dataPublicProfileIncorrectUidProvider')]
     #[TestDox('Trying different nonexistant indices $_dataName')]
-    public function testPublicProfileIncorrectUid(int $uid): void
+    public function testPublicProfileIncorrectUid(array $uid): void
     {
-        $crawler = self::$client->request('GET', "api/user/$uid");
+        $crawler = self::$client->jsonRequest('POST', "api/v1/user/get", $uid);
         $response = self::$client->getResponse();
 
         $this->assertResponseStatusCodeSame(400);
@@ -63,9 +63,9 @@ final class UserControllerTest extends WebTestCase
     #[Test]
     #[DataProvider('dataPublicProfileCorrectUidProvider')]
     #[TestDox('Trying valid request $_dataName')]
-    public function testPublicProfileCorrectUid(int $uid): void
+    public function testPublicProfileCorrectUid(array $uid): void
     {
-        $crawler = self::$client->request('GET', "api/user/$uid");
+        $crawler = self::$client->jsonRequest('POST', "api/v1/user/get", $uid);
         $response = self::$client->getResponse();
 
         $this->assertResponseStatusCodeSame(200);
@@ -76,10 +76,9 @@ final class UserControllerTest extends WebTestCase
     #[TestDox('Trying to use endpoint without authentication')]
     public function testUpdateMeRequiresJWT(): void
     {
-        $crawler = self::$client->request('PATCH', "/api/user/me");
+        $crawler = self::$client->request('PATCH', "/api/v1/user/me");
         $response = self::$client->getResponse();
 
-        // TODO
         $this->assertResponseStatusCodeSame(500);
         $this->assertJson($response->getContent());
     }
@@ -91,18 +90,20 @@ final class UserControllerTest extends WebTestCase
     {
         $headers = static::createAuthenticatedClient($uid);
 
-        $user_before = $this->repo->find($uid);
+        // $user_before = $this->repo->find($uid);
 
-        $crawler = self::$client->jsonRequest('PATCH', "/api/user/me", $rq, $headers);
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/user/me", $rq, $headers);
         $response = self::$client->getResponse();
 
-        // TODO
-        $this->assertResponseStatusCodeSame(500);
+        $this->assertResponseStatusCodeSame(200);
         $this->assertJson($response->getContent());
 
         $user_after = $this->repo->find($uid);
 
         return;
+
+        // Hmmm...
+        throw new \LogicException($user_after->getMotto());
 
         if (isset($rq["motto"]))
         {
@@ -135,10 +136,12 @@ final class UserControllerTest extends WebTestCase
     public static function dataPublicProfileIncorrectUidProvider(): array
     {
         $params = [
-            "big1" => [1024],
-            "big2" => [100100],
-            "negative" => [-1]
+            "big1" => ['uid' => 1024],
+            "big2" => ['uid' => 100100],
+            "negative" => ['uid' => -1]
         ];
+
+        array_walk($params, function (array &$item) { $item = array($item); });
 
         return $params;
     }
@@ -146,12 +149,14 @@ final class UserControllerTest extends WebTestCase
     public static function dataPublicProfileCorrectUidProvider(): array
     {
         $params = [
-            "correct1" => [1],
-            "correct2" => [2],
-            "correct3" => [10],
-            "correct4" => [11],
-            "correct5" => [53],
+            "correct1" => ['uid' => 1],
+            "correct2" => ['uid' => 2],
+            "correct3" => ['uid' => 10],
+            "correct4" => ['uid' => 11],
+            "correct5" => ['uid' => 53],
         ];
+
+        array_walk($params, function (array &$item) { $item = array($item); });
 
         return $params;
     }

@@ -14,7 +14,7 @@ final class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $crawler = $client->jsonRequest('POST', 'api/register', $rq);
+        $crawler = $client->jsonRequest('POST', 'api/v1/register', $rq);
         $response = $client->getResponse();
 
         $this->assertResponseStatusCodeSame(400);
@@ -28,7 +28,7 @@ final class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $crawler = $client->jsonRequest('POST', 'api/register', $rq);
+        $crawler = $client->jsonRequest('POST', 'api/v1/register', $rq);
         $response = $client->getResponse();
 
         $this->assertResponseStatusCodeSame(422);
@@ -42,7 +42,7 @@ final class AuthControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $crawler = $client->jsonRequest('POST', 'api/register', $rq);
+        $crawler = $client->jsonRequest('POST', 'api/v1/register', $rq);
         $response = $client->getResponse();
 
         $this->assertResponseStatusCodeSame(201);

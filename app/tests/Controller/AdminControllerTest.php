@@ -32,7 +32,7 @@ final class AdminControllerTest extends WebTestCase
     #[TestDox('Trying to use endpoint without authentication')]
     public function testDeleteUserRequiresJWT(): void
     {
-        $crawler = self::$client->request('PATCH', "/api/user/me");
+        $crawler = self::$client->request('PATCH', "/api/v1/user/me");
         $response = self::$client->getResponse();
 
         $this->assertResponseStatusCodeSame(500);
