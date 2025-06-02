@@ -9,7 +9,7 @@ final class AuthControllerTest extends WebTestCase
 {
     #[Test]
     #[DataProvider('dataRegisterIncorrectValuesProvider')]
-    #[TestDox('Trying incorrect request $_dataName')]
+    #[TestDox('[api/v1/register] Trying incorrect request $_dataName')]
     public function testRegisterIncorrectValues(array $rq)
     {
         $client = static::createClient();
@@ -23,7 +23,7 @@ final class AuthControllerTest extends WebTestCase
 
     #[Test]
     #[DataProvider('dataRegisterInvalidValuesProvider')]
-    #[TestDox('Trying invalid request $_dataName')]
+    #[TestDox('[api/v1/register] Trying invalid request $_dataName')]
     public function testRegisterInvalidValues(array $rq)
     {
         $client = static::createClient();
@@ -37,7 +37,7 @@ final class AuthControllerTest extends WebTestCase
 
     #[Test]
     #[DataProvider('dataRegisterValidValuesProvider')]
-    #[TestDox('Trying valid request $_dataName')]
+    #[TestDox('[api/v1/register] Trying valid request $_dataName')]
     public function testRegisterValidValues(array $rq): void
     {
         $client = static::createClient();

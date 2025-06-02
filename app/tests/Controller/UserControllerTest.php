@@ -50,7 +50,7 @@ final class UserControllerTest extends WebTestCase
 
     #[Test]
     #[DataProvider('dataPublicProfileIncorrectUidProvider')]
-    #[TestDox('Trying different nonexistant indices $_dataName')]
+    #[TestDox('[api/v1/user/get] Trying different nonexistant indices $_dataName')]
     public function testPublicProfileIncorrectUid(array $uid): void
     {
         $crawler = self::$client->jsonRequest('POST', "api/v1/user/get", $uid);
@@ -62,7 +62,7 @@ final class UserControllerTest extends WebTestCase
 
     #[Test]
     #[DataProvider('dataPublicProfileCorrectUidProvider')]
-    #[TestDox('Trying valid request $_dataName')]
+    #[TestDox('[api/v1/user/get] Trying valid request $_dataName')]
     public function testPublicProfileCorrectUid(array $uid): void
     {
         $crawler = self::$client->jsonRequest('POST', "api/v1/user/get", $uid);
@@ -73,7 +73,7 @@ final class UserControllerTest extends WebTestCase
     }
 
     #[Test]
-    #[TestDox('Trying to use endpoint without authentication')]
+    #[TestDox('[api/v1/user/me] Trying to use endpoint without authentication')]
     public function testUpdateMeRequiresJWT(): void
     {
         $crawler = self::$client->request('PATCH', "/api/v1/user/me");
@@ -85,7 +85,7 @@ final class UserControllerTest extends WebTestCase
 
     #[Test]
     #[DataProvider('dataUpdateMeChangeThingsProvider')]
-    #[TestDox('Trying to change things about logged user: $_dataName')]
+    #[TestDox('[api/v1/user/me] Trying to change things about logged user: $_dataName')]
     public function testUpdateMeChangeThings(int $uid, array $rq): void
     {
         $headers = static::createAuthenticatedClient($uid);
