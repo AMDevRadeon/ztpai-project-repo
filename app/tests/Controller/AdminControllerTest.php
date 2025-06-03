@@ -193,6 +193,181 @@ final class AdminControllerTest extends WebTestCase
     }
 
 
+    // api/v1/admin/topic/add
+    #[Test]
+    #[TestDox('[api/v1/admin/topic/delete] Trying to use endpoint without authentication')]
+    public function testAdminTopicDeleteRequiresJWT(): void
+    {
+        $crawler = self::$client->request('DELETE', "/api/v1/admin/topic/delete");
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[TestDox('[api/v1/admin/topic/delete] Trying to use endpoint as user')]
+    public function testAdminTopicDeleteMustBeAdmin(): void
+    {
+        $headers = static::createAuthenticatedClient(3);
+    
+        $crawler = self::$client->jsonRequest('DELETE', "/api/v1/admin/topic/delete", ['tid' => 1], $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminTopicDeleteInvalidValuesProvider')]
+    #[TestDox('[api/v1/admin/topic/delete] Trying invalid request: $_dataName')]
+    public function testAdminTopicDeleteInvalidValues(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('DELETE', "/api/v1/admin/topic/delete", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[TestDox('[api/v1/admin/topic/delete] Trying to delete topic')]
+    public function testAdminTopicDeleteRequest(): void
+    {
+        $headers = static::createAuthenticatedClient(20);
+
+        $crawler = self::$client->jsonRequest('DELETE', "/api/v1/admin/topic/delete", ['tid' => 2], $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertJson($response->getContent());
+    }
+
+
+    // api/v1/admin/topic/edit
+    #[Test]
+    #[TestDox('[api/v1/admin/topic/edit] Trying to use endpoint without authentication')]
+    public function testAdminTopicEditRequiresJWT(): void
+    {
+        $crawler = self::$client->request('PATCH', "/api/v1/admin/topic/edit");
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[TestDox('[api/v1/admin/topic/edit] Trying to use endpoint as user')]
+    public function testAdminTopicEditMustBeAdmin(): void
+    {
+        $headers = static::createAuthenticatedClient(3);
+    
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/topic/edit", ['tid' => 1, 'title' => "new_title"], $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminTopicEditIncorrectValuesProvider')]
+    #[TestDox('[api/v1/admin/topic/edit] Trying incorrect request: $_dataName')]
+    public function testAdminTopicEditIncorrectValues(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/topic/edit", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminTopicEditInvalidValuesProvider')]
+    #[TestDox('[api/v1/admin/topic/add] Trying invalid request: $_dataName')]
+    public function testAdminTopicEditInvalidValues(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/topic/edit", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminTopicEditRequestProvider')]
+    #[TestDox('[api/v1/admin/topic/add] Try various modifications of topic: $_dataName')]
+    public function testAdminTopicEditRequest(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/topic/edit", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertJson($response->getContent());
+    }
+
+
+    // api/v1/admin/post/edit
+    #[Test]
+    #[TestDox('[api/v1/admin/post/edit] Trying to use endpoint without authentication')]
+    public function testAdminPostEditRequiresJWT(): void
+    {
+        $crawler = self::$client->request('PATCH', "/api/v1/admin/post/edit");
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(401);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[TestDox('[api/v1/admin/post/edit] Trying to use endpoint as user')]
+    public function testAdminPostEditMustBeAdmin(): void
+    {
+        $headers = static::createAuthenticatedClient(3);
+    
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/post/edit", ['pid' => 11, 'archived' => true], $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminPostEditIncorrectValuesProvider')]
+    #[TestDox('[api/v1/admin/post/edit] Trying incorrect request: $_dataName')]
+    public function testAdminPostEditIncorrectValues(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/post/edit", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(400);
+        $this->assertJson($response->getContent());
+    }
+
+    #[Test]
+    #[DataProvider('dataAdminPostEditRequestProvider')]
+    #[TestDox('[api/v1/admin/post/edit] Try various modifications of post: $_dataName')]
+    public function testAdminPostEditRequest(int $uid, array $rq): void
+    {
+        $headers = static::createAuthenticatedClient($uid);
+
+        $crawler = self::$client->jsonRequest('PATCH', "/api/v1/admin/post/edit", $rq, $headers);
+        $response = self::$client->getResponse();
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertJson($response->getContent());
+    }
+
+
 
     public static function dataAdminDeleteIncorrectValuesProvider(): array
     {
@@ -242,5 +417,97 @@ final class AdminControllerTest extends WebTestCase
         return $params;
     }
 
+    public static function dataAdminTopicDeleteInvalidValuesProvider(): array
+    {
+        $params = [
+            "too_big_1" => [10, ["tid" => 1000]],
+            "too_big_2" => [10, ["tid" => 2140414]],
+            "negative" => [10, ["tid" => -1]]
+        ];
+
+        return $params;
+    }
+
+    public static function dataAdminTopicEditIncorrectValuesProvider(): array
+    {
+        $params = [
+            "too_big_1" => [10, ["tid" => 1000]],
+            "too_big_2" => [10, ["tid" => 2140414]],
+            "negative" => [10, ["tid" => -1]]
+        ];
+
+        return $params;
+    }
+
+    public static function dataAdminTopicEditInvalidValuesProvider(): array
+    {
+        $params = [
+            "title_too_long" => [10, [
+                "tid" => 1,
+                "title" => "asasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasas",
+            ]],
+            "content_too_long" => [20, [
+                "tid" => 1,
+                "content" => "asasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasasassasa"
+            ]],
+        ];
+
+        return $params;
+    }
     
+    public static function dataAdminTopicEditRequestProvider(): array
+    {
+        $params = [
+            "edit_title" => [10, [
+                'tid' => 1,
+                'title' => "new_title"
+            ]],
+            "edit_content" => [10, [
+                'tid' => 1,
+                'title' => "new_content"
+            ]],
+            "edit_archived" => [10, [
+                'tid' => 1,
+                'archived' => "true"
+            ]]
+        ];
+
+        return $params;
+    }    
+
+    public static function dataAdminPostEditIncorrectValuesProvider(): array
+    {
+        $params = [
+            "too_big_1" => [10, ["pid" => 1000]],
+            "too_big_2" => [10, ["pid" => 2140414]],
+            "negative" => [10, ["pid" => -1]]
+        ];
+
+        return $params;
+    }
+
+    public static function dataAdminPostEditRequestProvider(): array
+    {
+        $params = [
+            "edit_archived_true" => [10, [
+                'pid' => 11,
+                'archived' => true
+            ]],
+            "edit_closed_true" => [10, [
+                'pid' => 11,
+                'closed' => true
+            ]],
+            "edit_archived_true" => [10, [
+                'pid' => 13,
+                'archived' => false
+            ]],
+            "edit_closed_true" => [10, [
+                'pid' => 13,
+                'closed' => false
+            ]]
+        ];
+
+        return $params;
+    }   
+
 }
