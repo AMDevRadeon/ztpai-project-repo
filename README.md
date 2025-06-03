@@ -14,12 +14,12 @@ Projekt dzieli się na dwie zasadnicze części: frontend zbudowany w Reactie, o
 - Responsywny design
 
 # Wykorzystane technologie
-- PHP / Symfony: Dojrzały i w pełni wyposażony zbiór narzędzi do implementacji backendu,
-- Doctrine: Pozwala na wykorzystanie ORM i DBAL,
-- React: Popularna i obszerna biblioteka pozwalająca budować piękne, responsywne aplikacje internetowe,
-- Tailwind: Umożliwia stylowanie elementów wizualnych bzepośrednio w strukturze frontu bez nadkładu CSS,
-- Postgresql: Lider rozwiązań bazodanowych, pozwalający na niezrównanie szybki dostęp do SQL,
-- Nginx: Wydajny, otwartoźródłowy projekt serwera http/www.
+- __PHP / Symfony__: Dojrzały i w pełni wyposażony zbiór narzędzi do implementacji backendu,
+- __Doctrine__: Pozwala na wykorzystanie ORM i DBAL,
+- __React__: Popularna i obszerna biblioteka pozwalająca budować piękne, responsywne aplikacje internetowe,
+- __Tailwind__: Umożliwia stylowanie elementów wizualnych bzepośrednio w strukturze frontu bez nadkładu CSS,
+- __Postgresql__: Lider rozwiązań bazodanowych, pozwalający na niezrównanie szybki dostęp do SQL,
+- __Nginx__: Wydajny, otwartoźródłowy projekt serwera http/www.
 
 
 # Struktura repozytorium
@@ -42,11 +42,14 @@ ztpai-project-repo/
 │  ├─ nginx/
 │  ├─ php/
 │  └─ mysql/
-├─ react/          # aplikacja React – TypeScript, Vite + Tailwind
+├─ react/          # aplikacja React, Vite + Tailwind
 │  ├─ src/
 │  └─ vite.config.ts
 └─ README.md       # opis projektu
 ```
+
+# Schemat architektury
+![image](ztpai-project-architecture-schema.png "Schemat architektury")
 
 # Struktura bazy danych
 ![image](ztpai-project-erd-diagram.png "Schemat ERD")
