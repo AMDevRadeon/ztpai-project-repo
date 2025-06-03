@@ -1,18 +1,16 @@
 export async function loginUser(data) {
-    const res = await fetch('http://localhost:8080/api/v1/login_check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+    const res = await fetch("http://localhost:8080/api/v1/login_check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(data),
     });
 
     const result = await res.json();
 
     if (!res.ok || !result.refresh_token) {
-        throw new Error(result.message || 'Login failed');
+        throw new Error(result.message || "Login failed");
     }
-
-    localStorage.setItem('token', result.refresh_token);
 
     return result;
 }

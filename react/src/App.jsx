@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import TopicPage from "./pages/TopicPage";
 import PostPage from './pages/PostPage';
 import UserPage from "./pages/UserPage";
+import AccountPage from "./pages/AccountPage";
 
 export default function App() {
     return (
@@ -22,6 +23,7 @@ export default function App() {
                             <Route path="/topic/:id" element={<TopicPage />} />
                             <Route path="/post/:id" element={<PostPage />} />
                             <Route path="/user/:id" element={<UserPage />} />
+                            <Route path="/account" element={<AccountPage />} />
                         </Routes>
                     </main>
                 <Footer />

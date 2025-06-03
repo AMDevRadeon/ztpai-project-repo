@@ -18,5 +18,5 @@ lexik_jwt_authentication:
             samesite: lax
             path: /
             secure: false
-            httpOnly: true
+            httpOnly: false
             partitioned: false
