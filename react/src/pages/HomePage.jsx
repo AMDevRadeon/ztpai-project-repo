@@ -37,7 +37,6 @@ const mockTopics = [
     },
 ];
 
-/*
 const HomePage = () => {
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ['topics'],
@@ -48,7 +47,20 @@ const HomePage = () => {
         <div className="max-w-4xl mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-6">Forum Topics</h1>
 
-            {isLoading && <p className="text-gray-500">Loading topics...</p>}
+            {isLoading && (
+                <div className="space-y-4 animate-pulse">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                        <div
+                            key={idx}
+                            className="p-4 border rounded-xl bg-gray-100"
+                        >
+                            <div className="h-6 bg-gray-300 rounded w-1/3 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {isError && <p className="text-red-500">Error: {error.message}</p>}
             {!isLoading && data?.length === 0 && (
                 <p className="text-gray-500">No topics found.</p>
@@ -59,6 +71,7 @@ const HomePage = () => {
                     <Link
                         key={topic.tid}
                         to={`/topic/${topic.tid}`}
+                        state={{ title: topic.title }}
                         className="block p-4 border rounded-xl hover:bg-gray-50 transition"
                     >
                         <h2 className="text-xl font-semibold">{topic.title}</h2>
@@ -72,8 +85,11 @@ const HomePage = () => {
         </div>
     );
 };
- */
 
+
+export default HomePage;
+
+/*
 export default function HomePage() {
     return (
         <div className="max-w-4xl mx-auto mt-10 px-4">
@@ -94,3 +110,4 @@ export default function HomePage() {
         </div>
     );
 }
+ */

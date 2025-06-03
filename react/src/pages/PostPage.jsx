@@ -1,76 +1,119 @@
-import {useParams, useNavigate, Link} from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import BackButton from "../components/BackButton";
 
-const mockPost = {
-    id: 1,
-    title: "Jakie gry polecacie na 2025?",
-    content: "Szukam czegoś nowego do grania na wakacje. Co polecacie?",
-    author: "Janek123",
-    created_at: "2025-06-01",
+// Comments API call
+const fetchComments = async (pid, offset, limit) => {
+    const res = await fetch("http://localhost:8080/api/v1/comment/get", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            pid: Number(pid),
+            offset,
+            limit,
+        }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.desc || "Failed to fetch comments");
+
+    return data.value.comments;
 };
 
-const mockComments = [
-    { id: 1, author: "GamerX", text: "Polecam Baldur's Gate 4!", created_at: "2025-06-01" },
-    { id: 2, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-    { id: 3, author: "Kamil", text: "Czekam na Cyberpunk 2!", created_at: "2025-06-02" },
-    { id: 4, author: "Julia", text: "Valorant wciąga...", created_at: "2025-06-03" },
-    { id: 5, author: "Oskar", text: "Wiedźmin 4?", created_at: "2025-06-03" },
-    { id: 6, author: "Ewa", text: "Hades II na pewno!", created_at: "2025-06-04" },
-    { id: 7, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-    { id: 8, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-    { id: 9, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-    { id: 10, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-    { id: 11, author: "Marta", text: "Nowy Frostpunk też ma wyjść w lipcu.", created_at: "2025-06-02" },
-];
-
 export default function PostPage() {
-    const { id } = useParams();
-    const [comment, setComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { id } = useParams(); // pid
     const navigate = useNavigate();
-
+    const location = useLocation();
+    const { post } = location.state || {}; // coming from <Link state={{ post }} />
+    const [comment, setComment] = useState("");
     const [visibleCount, setVisibleCount] = useState(5);
 
-    const visibleComments = mockComments.slice(0, visibleCount);
-    const hasMore = visibleCount < mockComments.length;
+    const {
+        data: comments,
+        isLoading: commentsLoading,
+        isError: commentsError,
+        error: commentsErrorData,
+        refetch,
+    } = useQuery({
+        queryKey: ["comments", id],
+        queryFn: () => fetchComments(id, 0, 20),
+    });
+
 
     const handleLoadMore = () => {
         setVisibleCount((prev) => prev + 5);
     };
 
-
-    const handleCommentSubmit = (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault();
-        // TODO: call API to submit comment
-        console.log("Wysyłanie komentarza:", comment);
-        setComment("");
+        setIsSubmitting(true);
+
+        try {
+            const res = await fetch("http://localhost:8080/api/v1/comment/add", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    pid: Number(id),
+                    content: comment,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.desc || "Failed to add comment");
+            }
+
+            setComment(""); // wyczyść pole
+            await refetch(); // odśwież komentarze
+        } catch (error) {
+            alert(`Failed to add comment: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
+
+    const visibleComments = comments?.slice(0, visibleCount) || [];
+    const hasMore = comments && visibleCount < comments.length;
 
     return (
         <div className="max-w-3xl mx-auto mt-10 px-4 space-y-10">
-            {/* Post content */}
+            <BackButton />
             <div className="bg-white p-6 rounded-xl shadow border">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="text-blue-600 hover:text-blue-800 transition text-lg mb-4"
-                    title="Wróć"
-                >
-                    ← Back
-                </button>
-                {/* Post title */}
-                <h1 className="text-2xl font-bold text-blue-700">{mockPost.title}</h1>
-                <p className="text-gray-700 mt-2 whitespace-pre-line">{mockPost.content}</p>
-                <div className="text-sm text-gray-500 mt-3">
-                    By <Link
-                    to={`/user/${mockPost.id || 1}`}
-                    className="text-blue-600 hover:underline"
-                >
-                    {mockPost.author}
-                </Link>{" "} • {mockPost.created_at}
-                </div>
+
+                {!post ? (
+                    <p className="text-red-500">Error: Post not found</p>
+                ) : (
+                    <>
+                        <h1 className="text-2xl font-bold text-blue-700">{post.title}</h1>
+                        <p className="text-gray-700 mt-2 whitespace-pre-line">{post.content}</p>
+                        <div className="text-sm text-gray-500 mt-3">
+                            By{" "}
+                            <Link
+                                to={`/user/${post.uid}`}
+                                className="text-blue-600 hover:underline"
+                            >
+                                User#{post.uid}
+                            </Link>{" "}
+                            • {new Date(post.postCreationTimestamp).toLocaleString()}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Add comment */}
-            <form onSubmit={handleCommentSubmit} className="bg-white border rounded-xl shadow p-4">
+            <form
+                onSubmit={handleCommentSubmit}
+                className="bg-white border rounded-xl shadow p-4"
+            >
                 <label className="block mb-2 font-medium text-gray-700">Add comment:</label>
                 <textarea
                     value={comment}
@@ -81,31 +124,44 @@ export default function PostPage() {
                 />
                 <button
                     type="submit"
-                    className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                    disabled={isSubmitting}
+                    className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                 >
-                    Send
+                    {isSubmitting ? "Sending..." : "Send"}
                 </button>
+
             </form>
 
             {/* Comments */}
             <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-gray-800">Comments</h2>
 
-                {visibleComments.map((com) => (
-                    <div key={com.id} className="bg-gray-100 rounded-lg p-4 border">
-                        <p className="text-gray-700">{com.text}</p>
-                        <div className="text-sm text-gray-500 mt-1">
-                            <Link
-                                to={`/user/${com.id || 1}`}
-                                className="text-blue-600 hover:underline"
-                            >
-                                {com.author}
-                            </Link>{" "}
-                            • {com.created_at}
-                        </div>
-
+                {commentsLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-4 bg-gray-200 rounded w-3/4" />
+                        ))}
                     </div>
-                ))}
+                ) : commentsError ? (
+                    <p className="text-red-500">Error: {commentsErrorData.message}</p>
+                ) : visibleComments.length === 0 ? (
+                    <p className="text-gray-500">No comments yet.</p>
+                ) : (
+                    visibleComments.map((com) => (
+                        <div key={com.cid} className="bg-gray-100 rounded-lg p-4 border">
+                            <p className="text-gray-700">{com.content}</p>
+                            <div className="text-sm text-gray-500 mt-1">
+                                <Link
+                                    to={`/user/${com.uid}`}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    User#{com.uid}
+                                </Link>{" "}
+                                • {new Date(com.commentCreationTimestamp).toLocaleString()}
+                            </div>
+                        </div>
+                    ))
+                )}
 
                 {hasMore && (
                     <button

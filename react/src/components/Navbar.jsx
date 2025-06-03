@@ -9,7 +9,7 @@ const Navbar = () => {
         <nav className="bg-gray-100 border-b border-gray-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                 <Link to="/" className="text-2xl font-extrabold text-blue-600 tracking-tight">
-                    ForumZone
+                    Physcussions
                 </Link>
 
                 {!loading && (
